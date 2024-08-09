@@ -5,7 +5,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using static Shady.Parser;
 
 namespace Shady
 {
@@ -17,7 +16,9 @@ namespace Shady
         Variant,
         OpenBracket,
         CloseBracket,
-        Identifier
+        Identifier,
+        Dot,
+        Comma
     }
 
     internal class Parser
@@ -33,6 +34,8 @@ namespace Shady
             tokensRegexes[(int)TokenType.OpenBracket] = new TokenRegex(TokenType.OpenBracket, @"^\(", "open bracket '('");
             tokensRegexes[(int)TokenType.CloseBracket] = new TokenRegex(TokenType.CloseBracket, @"^\)", "close bracket ')'");
             tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/macro identifier");
+            tokensRegexes[(int)TokenType.Dot] = new TokenRegex(TokenType.Dot, @"^[.]", "dot '.'");
+            tokensRegexes[(int)TokenType.Comma] = new TokenRegex(TokenType.Comma, @"^[,]", "comma ','");
         }
 
         public Token? Match(string input, TokenType tokenType)
@@ -61,7 +64,7 @@ namespace Shady
                 }
             }
 
-            string expectedExpressions = string.Join("/", expectedTokens.Select(t => $"{tokensRegexes[(int)t].Description}"));
+            string expectedExpressions = string.Join(" or ", expectedTokens.Select(t => $"{tokensRegexes[(int)t].Description}"));
 
             throw new UnexpectedExpression($"Undexpected expression found! The {expectedExpressions} is expected after {tokensRegexes[(int)previousToken].Description}.");
         }
