@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
 
@@ -6,20 +7,55 @@ namespace Shady
 {
     internal class Program
     {
+        static Parser parser = new Parser();
+        static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
+
         static void Main(string[] args)
         {
-            Parser parser = new Parser();
-
             string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
+            //string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
             string shadersPath = projectPath + @"\shaders";
-            string path = shadersPath + @"\sh_example\sh_example.fsh";
 
+            string[] shaderFiles = Directory.GetFiles(projectPath, "*.fsh", SearchOption.AllDirectories);
+
+            foreach (string shaderFile in shaderFiles)
+            {
+                string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+                Shader shader = ParseShader(shaderFile);
+                shaders.Add(shaderName, shader);
+            }
+
+            Parallel.ForEach(shaders, ParseTokens);
+        }
+
+        private static Shader ParseShader(string path)
+        {
             const bool forceNonParallel = true;
             var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
 
-            Parallel.ForEach(File.ReadLines(path), options, (line, state, index) =>
+            Shader shader = new Shader(Path.GetFileName(path));
+
+            IEnumerable<string> lines = File.ReadLines(path);
+            int i = -1;
+
+            foreach (string line in lines)
             {
-                line = Regex.Replace(line, @"^\s+", "");
+                i++;
+                shader.AddLine(i, line);
+            }
+
+            return shader;
+        }
+
+        private static void ParseTokens(KeyValuePair<string, Shader> shaderKeyValue)
+        {
+            Shader shader = shaderKeyValue.Value;
+
+            LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
+            while (currentNode != null)
+            {
+                ShaderLine shaderLine = currentNode.Value;
+                string line = Regex.Replace(shaderLine.Line, @"^\s+", "");
 
                 Token? pragma = parser.Match(line, TokenType.Shady);
                 if (pragma != null)
@@ -65,7 +101,7 @@ namespace Shady
                                     break;
 
                                 default:
-                                    
+
                                     break;
                             }
 
@@ -74,12 +110,12 @@ namespace Shady
                         catch (UnexpectedExpression e)
                         {
                             expectedTokens.Clear();
-                            Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(path)}, line {index + 1}: {e.Message}");
+                            Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
                         }
                     }
 
-                    Console.Write($"{index} ");
-                    lineTokens.ForEach(token => Console.Write($"{token.Value} +"));
+                    //Console.Write($"{index} ");
+                    lineTokens.ForEach(token => Console.Write($"[{token.Value}]"));
                     Console.WriteLine();
 
                     if (lineTokens.Count > 0)
@@ -89,12 +125,15 @@ namespace Shady
                             case TokenType.Import:
                                 int indexShader = 2;
                                 int indexIdentifier = 4;
-                                
+
                                 break;
                         }
                     }
                 }
-            });
+
+                Console.WriteLine($"{shaderLine.ShaderName}: {shaderLine.Line}");
+                currentNode = currentNode.Next;
+            }
         }
     }
 }
