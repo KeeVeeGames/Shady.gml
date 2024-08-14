@@ -14,8 +14,10 @@ namespace Shady
         Import,
         Inline,
         Variant,
-        OpenBracket,
-        CloseBracket,
+        OpenParen,
+        CloseParen,
+        OpenBrace,
+        CloseBrace,
         Identifier,
         Dot,
         Comma
@@ -27,15 +29,20 @@ namespace Shady
 
         public Parser()
         {
+            // sequential
             tokensRegexes[(int)TokenType.Shady] = new TokenRegex(TokenType.Shady, "^#pragma shady:", "'shady:'");
             tokensRegexes[(int)TokenType.Import] = new TokenRegex(TokenType.Import, "^import", "'import'");
             tokensRegexes[(int)TokenType.Inline] = new TokenRegex(TokenType.Inline, "^inline", "'inline'");
             tokensRegexes[(int)TokenType.Variant] = new TokenRegex(TokenType.Variant, "^variant", "'variant'");
-            tokensRegexes[(int)TokenType.OpenBracket] = new TokenRegex(TokenType.OpenBracket, @"^\(", "open bracket '('");
-            tokensRegexes[(int)TokenType.CloseBracket] = new TokenRegex(TokenType.CloseBracket, @"^\)", "close bracket ')'");
+            tokensRegexes[(int)TokenType.OpenParen] = new TokenRegex(TokenType.OpenParen, @"^\(", "open paren '('");
+            tokensRegexes[(int)TokenType.CloseParen] = new TokenRegex(TokenType.CloseParen, @"^\)", "close paren ')'");
             tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/macro identifier");
             tokensRegexes[(int)TokenType.Dot] = new TokenRegex(TokenType.Dot, @"^[.]", "dot '.'");
             tokensRegexes[(int)TokenType.Comma] = new TokenRegex(TokenType.Comma, @"^[,]", "comma ','");
+
+            // free
+            tokensRegexes[(int)TokenType.OpenBrace] = new TokenRegex(TokenType.OpenBrace, @"\{", "open brace '{'");
+            tokensRegexes[(int)TokenType.CloseBrace] = new TokenRegex(TokenType.CloseBrace, @"\}", "close brace '}'");
         }
 
         public Token? Match(string input, TokenType tokenType)
