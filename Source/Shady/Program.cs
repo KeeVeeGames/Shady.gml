@@ -25,14 +25,14 @@ namespace Shady
                 shaders.Add(shaderName, shader);
             }
 
-            Parallel.ForEach(shaders, ParseTokens);
+            const bool forceNonParallel = true;
+            var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
+
+            Parallel.ForEach(shaders, options, ParseTokens);
         }
 
         private static Shader ParseShader(string path)
         {
-            const bool forceNonParallel = true;
-            var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
-
             Shader shader = new Shader(Path.GetFileName(path));
 
             IEnumerable<string> lines = File.ReadLines(path);
@@ -50,18 +50,21 @@ namespace Shady
         private static void ParseTokens(KeyValuePair<string, Shader> shaderKeyValue)
         {
             Shader shader = shaderKeyValue.Value;
+            int level = 0;
 
             LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
             while (currentNode != null)
             {
                 ShaderLine shaderLine = currentNode.Value;
-                string line = Regex.Replace(shaderLine.Line, @"^\s+", "");
+                string line = Regex.Replace(shaderLine.Line, @"^\s+", "");  /// remove leading whitespaces
+                string remainingLine;
 
+                // Parse Shady tokens
                 Token? pragma = parser.Match(line, TokenType.Shady);
                 if (pragma != null)
                 {
                     //Console.WriteLine(pragma.Value);
-                    line = Regex.Replace(pragma.RemainingInput, @"\s", "");
+                    remainingLine = Regex.Replace(pragma.RemainingInput, @"\s", ""); /// remove all whitespaces
 
                     TokenType previousToken = TokenType.Shady;
                     List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant };
@@ -71,10 +74,10 @@ namespace Shady
                     {
                         try
                         {
-                            Token token = parser.Expect(line, expectedTokens, previousToken);
+                            Token token = parser.Expect(remainingLine, expectedTokens, previousToken);
                             //Console.WriteLine($"{token.Value}");
 
-                            line = token.RemainingInput;
+                            remainingLine = token.RemainingInput;
                             previousToken = token.TokenType;
                             expectedTokens.Clear();
 
@@ -83,21 +86,21 @@ namespace Shady
                                 case TokenType.Import:
                                 case TokenType.Inline:
                                 case TokenType.Variant:
-                                    expectedTokens.Add(TokenType.OpenBracket);
+                                    expectedTokens.Add(TokenType.OpenParen);
                                     break;
 
-                                case TokenType.OpenBracket:
+                                case TokenType.OpenParen:
                                     expectedTokens.Add(TokenType.Identifier);
                                     break;
 
                                 case TokenType.Identifier:
                                     expectedTokens.Add(TokenType.Dot);
-                                    expectedTokens.Add(TokenType.CloseBracket);
+                                    expectedTokens.Add(TokenType.CloseParen);
                                     break;
 
                                 case TokenType.Dot:
                                     expectedTokens.Add(TokenType.Identifier);
-                                    expectedTokens.Add(TokenType.CloseBracket);
+                                    expectedTokens.Add(TokenType.CloseParen);
                                     break;
 
                                 default:
@@ -131,7 +134,7 @@ namespace Shady
                     }
                 }
 
-                Console.WriteLine($"{shaderLine.ShaderName}: {shaderLine.Line}");
+                Console.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
                 currentNode = currentNode.Next;
             }
         }
