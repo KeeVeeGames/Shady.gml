@@ -133,6 +133,26 @@ namespace Shady
                         }
                     }
                 }
+                else // Parse #define region
+                {
+                    // Parse assignment region
+
+                    // Parse function region
+                }
+
+                // Parse open brace
+                Token? openBrace = parser.Match(line, TokenType.OpenBrace);
+                if (openBrace != null)
+                {
+                    level++;
+                }
+
+                // Parse close brace
+                Token? closeBrace = parser.Match(line, TokenType.CloseBrace);
+                if (closeBrace != null)
+                {
+                    level--;
+                }
 
                 Console.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
                 currentNode = currentNode.Next;
