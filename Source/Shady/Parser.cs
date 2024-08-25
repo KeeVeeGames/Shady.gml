@@ -16,11 +16,15 @@ namespace Shady
         Variant,
         OpenParen,
         CloseParen,
-        OpenBrace,
-        CloseBrace,
         Identifier,
         Dot,
-        Comma
+        Comma,
+
+        OpenBrace,
+        CloseBrace,
+        Define,
+        Assignment,
+        Function,
     }
 
     internal class Parser
@@ -43,6 +47,9 @@ namespace Shady
             // free
             tokensRegexes[(int)TokenType.OpenBrace] = new TokenRegex(TokenType.OpenBrace, @"\{", "open brace '{'");
             tokensRegexes[(int)TokenType.CloseBrace] = new TokenRegex(TokenType.CloseBrace, @"\}", "close brace '}'");
+            tokensRegexes[(int)TokenType.Define] = new TokenRegex(TokenType.Define, @"#define", "#define");
+            tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\=", "=");
+            tokensRegexes[(int)TokenType.Function] = new TokenRegex(TokenType.Function, @"\w+\(", "function()");
         }
 
         public Token? Match(string input, TokenType tokenType)
