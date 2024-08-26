@@ -20,11 +20,15 @@ namespace Shady
         Dot,
         Comma,
 
+        LineComment,
+        OpenComment,
+        CloseComment,
         OpenBrace,
         CloseBrace,
         Define,
         Assignment,
         Function,
+        Main
     }
 
     internal class Parser
@@ -33,7 +37,7 @@ namespace Shady
 
         public Parser()
         {
-            // sequential
+            // expected
             tokensRegexes[(int)TokenType.Shady] = new TokenRegex(TokenType.Shady, "^#pragma shady:", "'shady:'");
             tokensRegexes[(int)TokenType.Import] = new TokenRegex(TokenType.Import, "^import", "'import'");
             tokensRegexes[(int)TokenType.Inline] = new TokenRegex(TokenType.Inline, "^inline", "'inline'");
@@ -45,11 +49,16 @@ namespace Shady
             tokensRegexes[(int)TokenType.Comma] = new TokenRegex(TokenType.Comma, @"^[,]", "comma ','");
 
             // free
+            tokensRegexes[(int)TokenType.LineComment] = new TokenRegex(TokenType.LineComment, @"^\/{2}", "line comment '//'");
+            tokensRegexes[(int)TokenType.OpenComment] = new TokenRegex(TokenType.OpenComment, @"\/\*", "open comment '/*'");
+            tokensRegexes[(int)TokenType.CloseComment] = new TokenRegex(TokenType.CloseComment, @"\*\/", "close comment '*/'");
             tokensRegexes[(int)TokenType.OpenBrace] = new TokenRegex(TokenType.OpenBrace, @"\{", "open brace '{'");
             tokensRegexes[(int)TokenType.CloseBrace] = new TokenRegex(TokenType.CloseBrace, @"\}", "close brace '}'");
-            tokensRegexes[(int)TokenType.Define] = new TokenRegex(TokenType.Define, @"#define", "#define");
-            tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\=", "=");
+            tokensRegexes[(int)TokenType.Define] = new TokenRegex(TokenType.Define, @"^#define", "#define");
+            tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\=", "assignemnt '='");
             tokensRegexes[(int)TokenType.Function] = new TokenRegex(TokenType.Function, @"\w+\(", "function()");
+            tokensRegexes[(int)TokenType.Main] = new TokenRegex(TokenType.Main, @"main\(", "main()");
+
         }
 
         public Token? Match(string input, TokenType tokenType)
