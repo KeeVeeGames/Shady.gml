@@ -12,8 +12,8 @@ namespace Shady
 
         static void Main(string[] args)
         {
-            string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
-            //string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
+            //string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
+            string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
             string shadersPath = projectPath + @"\shaders";
 
             string[] shaderFiles = Directory.GetFiles(projectPath, "*.fsh", SearchOption.AllDirectories);
@@ -51,6 +51,8 @@ namespace Shady
         {
             Shader shader = shaderKeyValue.Value;
             int level = 0;
+            bool isCommented = false;
+            bool inMain = false;
 
             LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
             while (currentNode != null)
@@ -133,11 +135,82 @@ namespace Shady
                         }
                     }
                 }
-                else // Parse #define region
+                else
                 {
-                    // Parse assignment region
+                    new Action(() =>
+                    {
+                        if (!isCommented)
+                        {
+                            // Parse line comment
+                            Token? lineComment = parser.Match(line, TokenType.LineComment);
+                            if (lineComment != null)
+                            {
+                                Console.WriteLine("!!!! Line Comment!");
+                                return;
+                            }
 
-                    // Parse function region
+                            // Parse multi-line comment
+                            Token? openComment = parser.Match(line, TokenType.OpenComment);
+                            if (openComment != null)
+                            {
+                                Console.WriteLine("!!!! Open Comment!");
+
+                                Token? closeComment = parser.Match(line, TokenType.CloseComment);
+                                if (closeComment != null)
+                                {
+                                    Console.WriteLine("!!!! Close Comment!");
+                                }
+                                else
+                                {
+                                    isCommented = true;
+                                }
+                            }
+
+                            if (level != 0) return;
+
+                            // Parse main() region
+                            Token? main = parser.Match(line, TokenType.Main);
+                            if (main != null)
+                            {
+                                inMain = true;
+                                Console.WriteLine("!!!! Main!");
+                                return;
+                            }
+
+                            // Parse #define region
+                            Token? define = parser.Match(line, TokenType.Define);
+                            if (define != null)
+                            {
+                                Console.WriteLine("!!!! Define!");
+                                return;
+                            }
+
+                            // Parse assignment region
+                            Token? assignment = parser.Match(line, TokenType.Assignment);
+                            if (assignment != null)
+                            {
+                                Console.WriteLine("!!!! Assignment!");
+                                return;
+                            }
+
+                            // Parse function region
+                            Token? function = parser.Match(line, TokenType.Function);
+                            if (function != null)
+                            {
+                                Console.WriteLine("!!!! Function!");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            Token? closeComment = parser.Match(line, TokenType.CloseComment);
+                            if (closeComment != null)
+                            {
+                                Console.WriteLine("!!!! Close Comment!");
+                                isCommented = false;
+                            }
+                        }
+                    })();
                 }
 
                 // Parse open brace
