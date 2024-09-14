@@ -25,6 +25,9 @@ namespace Shady
         CloseComment,
         OpenBrace,
         CloseBrace,
+        Varying,
+        Uniform,
+        Precision,
         Define,
         Assignment,
         Function,
@@ -54,6 +57,9 @@ namespace Shady
             tokensRegexes[(int)TokenType.CloseComment] = new TokenRegex(TokenType.CloseComment, @"\*\/", "close comment '*/'");
             tokensRegexes[(int)TokenType.OpenBrace] = new TokenRegex(TokenType.OpenBrace, @"\{", "open brace '{'");
             tokensRegexes[(int)TokenType.CloseBrace] = new TokenRegex(TokenType.CloseBrace, @"\}", "close brace '}'");
+            tokensRegexes[(int)TokenType.Varying] = new TokenRegex(TokenType.Varying, @"^varying", "varying");
+            tokensRegexes[(int)TokenType.Uniform] = new TokenRegex(TokenType.Uniform, @"^uniform", "uniform");
+            tokensRegexes[(int)TokenType.Precision] = new TokenRegex(TokenType.Precision, @"^precision", "precision");
             tokensRegexes[(int)TokenType.Define] = new TokenRegex(TokenType.Define, @"^#define", "#define");
             tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\=", "assignemnt '='");
             tokensRegexes[(int)TokenType.Function] = new TokenRegex(TokenType.Function, @"\w+\(", "function()");
