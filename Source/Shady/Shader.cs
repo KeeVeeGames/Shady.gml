@@ -7,19 +7,50 @@ namespace Shady
 {
     internal class Shader
     {
+        public const string FullRegion = "full";
         public string Name { get; }
         public LinkedList<ShaderLine> Lines { get; }
-        private readonly Dictionary<string, LinkedListNode<string>> _exports;
-        private readonly Dictionary<string, LinkedListNode<string>> _macros;
+        private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
+
         public Shader(string name)
         {
             Name = name;
             Lines = new LinkedList<ShaderLine>();
+
+            _regions = new Dictionary<string, LinkedList<ShaderLine>>();
         }
 
         public void AddLine(int lineIndex, string line)
         {
             Lines.AddLast(new ShaderLine(Name, lineIndex, line));
+        }
+
+        public void AddToRegion(string regionName, ShaderLine shaderLine)
+        {
+            LinkedList<ShaderLine> region;
+
+            if (!_regions.ContainsKey(regionName))
+            {
+                region = new LinkedList<ShaderLine>();
+                _regions.Add(regionName, region);
+            } else
+            {
+                region = _regions[regionName];
+            }
+
+            region.AddLast(shaderLine);
+        }
+
+        public LinkedList<ShaderLine>? GetRegion(string regionName)
+        {
+            if (_regions.ContainsKey(regionName))
+            {
+                return _regions[regionName];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public void DebugConsole()
