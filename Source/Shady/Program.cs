@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
 
@@ -52,6 +53,7 @@ namespace Shady
             Shader shader = shaderKeyValue.Value;
             int level = 0;
             bool isCommented = false;
+            bool isLineIgnored = false;
             bool inMain = false;
 
             LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
@@ -60,6 +62,8 @@ namespace Shady
                 ShaderLine shaderLine = currentNode.Value;
                 string line = Regex.Replace(shaderLine.Line, @"^\s+", "");  /// remove leading whitespaces
                 string remainingLine;
+
+                isLineIgnored = false;
 
                 // Parse Shady tokens
                 Token? pragma = parser.Match(line, TokenType.Shady);
@@ -141,10 +145,17 @@ namespace Shady
                     {
                         if (!isCommented)
                         {
+                            if (string.IsNullOrEmpty(line))
+                            {
+                                isLineIgnored = true;
+                                return;
+                            }
+
                             // Parse line comment
                             Token? lineComment = parser.Match(line, TokenType.LineComment);
                             if (lineComment != null)
                             {
+                                isLineIgnored = true;
                                 Console.WriteLine("!!!! Line Comment!");
                                 return;
                             }
@@ -167,6 +178,33 @@ namespace Shady
                             }
 
                             if (level != 0) return;
+
+                            // Parse varying
+                            Token? varying = parser.Match(line, TokenType.Varying);
+                            if (varying != null)
+                            {
+                                isLineIgnored = true;
+                                Console.WriteLine("!!!! Varying!");
+                                return;
+                            }
+
+                            // Parse uniform
+                            Token? uniform = parser.Match(line, TokenType.Uniform);
+                            if (uniform != null)
+                            {
+                                isLineIgnored = true;
+                                Console.WriteLine("!!!! Uniform!");
+                                return;
+                            }
+
+                            // Parse uniform
+                            Token? precision = parser.Match(line, TokenType.Precision);
+                            if (precision != null)
+                            {
+                                isLineIgnored = true;
+                                Console.WriteLine("!!!! Precision!");
+                                return;
+                            }
 
                             // Parse main() region
                             Token? main = parser.Match(line, TokenType.Main);
@@ -225,6 +263,11 @@ namespace Shady
                 if (closeBrace != null)
                 {
                     level--;
+                }
+
+                if (!isCommented && !isLineIgnored && !inMain)
+                {
+                    shader.AddToRegion(Shader.FullRegion, shaderLine);
                 }
 
                 Console.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
