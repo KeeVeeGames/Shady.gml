@@ -53,6 +53,8 @@ namespace Shady
             }
         }
 
+        public string[] GetRegionNames() { return _regions.Keys.ToArray(); }
+
         public void DebugConsole()
         {
             foreach (var line in Lines)
