@@ -220,6 +220,19 @@ namespace Shady
                             if (define != null)
                             {
                                 Console.WriteLine("!!!! Define!");
+
+                                remainingLine = define.RemainingInput.TrimStart();
+
+                                try
+                                {
+                                    Token token = parser.Expect(remainingLine, TokenType.Identifier, TokenType.Define);
+                                    shader.AddToRegion(token.Value, shaderLine);
+                                }
+                                catch (UnexpectedExpression e)
+                                {
+                                    Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
+                                }
+
                                 return;
                             }
 
