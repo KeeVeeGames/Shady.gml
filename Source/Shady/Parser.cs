@@ -61,8 +61,8 @@ namespace Shady
             tokensRegexes[(int)TokenType.Uniform] = new TokenRegex(TokenType.Uniform, @"^uniform", "uniform");
             tokensRegexes[(int)TokenType.Precision] = new TokenRegex(TokenType.Precision, @"^precision", "precision");
             tokensRegexes[(int)TokenType.Define] = new TokenRegex(TokenType.Define, @"^#define", "#define");
-            tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\=", "assignemnt '='");
-            tokensRegexes[(int)TokenType.Function] = new TokenRegex(TokenType.Function, @"\w+\(", "function()");
+            tokensRegexes[(int)TokenType.Assignment] = new TokenRegex(TokenType.Assignment, @"\w+\s*\=", "assignemnt '='");
+            tokensRegexes[(int)TokenType.Function] = new TokenRegex(TokenType.Function, @"\w+\s*\(", "function()");
             tokensRegexes[(int)TokenType.Main] = new TokenRegex(TokenType.Main, @"main\(", "main()");
 
         }

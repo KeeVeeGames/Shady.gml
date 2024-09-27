@@ -7,7 +7,7 @@ namespace Shady
 {
     internal class Shader
     {
-        public const string FullRegion = "full";
+        public const string FullRegion = "__shady_export__";
         public string Name { get; }
         public LinkedList<ShaderLine> Lines { get; }
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;

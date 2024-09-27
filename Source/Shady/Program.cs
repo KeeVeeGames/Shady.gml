@@ -55,12 +55,14 @@ namespace Shady
             bool isCommented = false;
             bool isLineIgnored = false;
             bool inMain = false;
+            string regionNameFunction = string.Empty;
 
             LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
             while (currentNode != null)
             {
                 ShaderLine shaderLine = currentNode.Value;
                 string line = Regex.Replace(shaderLine.Line, @"^\s+", "");  /// remove leading whitespaces
+                //string line = Regex.Replace(shaderLine.Line, @"\s+", "");  /// remove all whitespaces
                 string remainingLine;
 
                 isLineIgnored = false;
@@ -71,6 +73,7 @@ namespace Shady
                 {
                     //Console.WriteLine(pragma.Value);
                     remainingLine = Regex.Replace(pragma.RemainingInput, @"\s", ""); /// remove all whitespaces
+                    //remainingLine = pragma.RemainingInput;
 
                     TokenType previousToken = TokenType.Shady;
                     List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant };
@@ -241,6 +244,16 @@ namespace Shady
                             if (assignment != null)
                             {
                                 Console.WriteLine("!!!! Assignment!");
+
+                                remainingLine = assignment.Value;
+
+                                Token? assignmentName = parser.Match(remainingLine, TokenType.Identifier);
+
+                                if (assignmentName != null)
+                                {
+                                    shader.AddToRegion(assignmentName.Value, shaderLine);
+                                }
+
                                 return;
                             }
 
@@ -249,6 +262,16 @@ namespace Shady
                             if (function != null)
                             {
                                 Console.WriteLine("!!!! Function!");
+
+                                remainingLine = function.Value;
+
+                                Token? functionName = parser.Match(remainingLine, TokenType.Identifier);
+
+                                if (functionName != null)
+                                {
+                                    regionNameFunction = functionName.Value;
+                                }
+
                                 return;
                             }
                         }
@@ -264,6 +287,16 @@ namespace Shady
                     })();
                 }
 
+                if (!isCommented && !isLineIgnored && !inMain)
+                {
+                    shader.AddToRegion(Shader.FullRegion, shaderLine);
+
+                    if (!string.IsNullOrEmpty(regionNameFunction))
+                    {
+                        shader.AddToRegion(regionNameFunction, shaderLine);
+                    }
+                }
+
                 // Parse open brace
                 Token? openBrace = parser.Match(line, TokenType.OpenBrace);
                 if (openBrace != null)
@@ -276,11 +309,11 @@ namespace Shady
                 if (closeBrace != null)
                 {
                     level--;
-                }
 
-                if (!isCommented && !isLineIgnored && !inMain)
-                {
-                    shader.AddToRegion(Shader.FullRegion, shaderLine);
+                    if (level == 0)
+                    {
+                        regionNameFunction = string.Empty;
+                    }
                 }
 
                 Console.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
