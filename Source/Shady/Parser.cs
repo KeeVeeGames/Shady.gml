@@ -17,6 +17,7 @@ namespace Shady
         OpenParen,
         CloseParen,
         Identifier,
+        Argument,
         Dot,
         Comma,
 
@@ -47,7 +48,8 @@ namespace Shady
             tokensRegexes[(int)TokenType.Variant] = new TokenRegex(TokenType.Variant, "^variant", "'variant'");
             tokensRegexes[(int)TokenType.OpenParen] = new TokenRegex(TokenType.OpenParen, @"^\(", "open paren '('");
             tokensRegexes[(int)TokenType.CloseParen] = new TokenRegex(TokenType.CloseParen, @"^\)", "close paren ')'");
-            tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/macro identifier");
+            tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/variable/macro identifier");
+            tokensRegexes[(int)TokenType.Argument] = new TokenRegex(TokenType.Argument, @"^\w+", "argument");
             tokensRegexes[(int)TokenType.Dot] = new TokenRegex(TokenType.Dot, @"^[.]", "dot '.'");
             tokensRegexes[(int)TokenType.Comma] = new TokenRegex(TokenType.Comma, @"^[,]", "comma ','");
 

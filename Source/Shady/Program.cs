@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,8 +14,8 @@ namespace Shady
 
         static void Main(string[] args)
         {
-            //string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
-            string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
+            string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
+            //string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
             string shadersPath = projectPath + @"\shaders";
 
             string[] shaderFiles = Directory.GetFiles(projectPath, "*.fsh", SearchOption.AllDirectories);
@@ -30,6 +31,8 @@ namespace Shady
             var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
 
             Parallel.ForEach(shaders, options, ParseTokens);
+
+            Console.WriteLine("[Shady] Complete!");
         }
 
         private static Shader ParseShader(string path)
@@ -87,7 +90,6 @@ namespace Shady
                             //Console.WriteLine($"{token.Value}");
 
                             remainingLine = token.RemainingInput;
-                            previousToken = token.TokenType;
                             expectedTokens.Clear();
 
                             switch (token.TokenType)
@@ -99,7 +101,14 @@ namespace Shady
                                     break;
 
                                 case TokenType.OpenParen:
-                                    expectedTokens.Add(TokenType.Identifier);
+                                    if (previousToken != TokenType.Variant)
+                                    {
+                                        expectedTokens.Add(TokenType.Identifier);
+                                    }
+                                    else
+                                    {
+                                        expectedTokens.Add(TokenType.Argument);
+                                    }
                                     break;
 
                                 case TokenType.Identifier:
@@ -109,7 +118,15 @@ namespace Shady
 
                                 case TokenType.Dot:
                                     expectedTokens.Add(TokenType.Identifier);
+                                    break;
+
+                                case TokenType.Argument:
+                                    expectedTokens.Add(TokenType.Comma);
                                     expectedTokens.Add(TokenType.CloseParen);
+                                    break;
+
+                                case TokenType.Comma:
+                                    expectedTokens.Add(TokenType.Argument);
                                     break;
 
                                 default:
@@ -117,6 +134,7 @@ namespace Shady
                                     break;
                             }
 
+                            previousToken = token.TokenType;
                             lineTokens.Add(token);
                         }
                         catch (UnexpectedExpression e)
@@ -127,8 +145,8 @@ namespace Shady
                     }
 
                     //Console.Write($"{index} ");
-                    lineTokens.ForEach(token => Console.Write($"[{token.Value}]"));
-                    Console.WriteLine();
+                    lineTokens.ForEach(token => Debug.Write($"[{token.Value}]"));
+                    Debug.WriteLine("");
 
                     if (lineTokens.Count > 0)
                     {
@@ -159,7 +177,7 @@ namespace Shady
                             if (lineComment != null)
                             {
                                 isLineIgnored = true;
-                                Console.WriteLine("!!!! Line Comment!");
+                                Debug.WriteLine("!!!! Line Comment!");
                                 return;
                             }
 
@@ -167,12 +185,12 @@ namespace Shady
                             Token? openComment = parser.Match(line, TokenType.OpenComment);
                             if (openComment != null)
                             {
-                                Console.WriteLine("!!!! Open Comment!");
+                                Debug.WriteLine("!!!! Open Comment!");
 
                                 Token? closeComment = parser.Match(line, TokenType.CloseComment);
                                 if (closeComment != null)
                                 {
-                                    Console.WriteLine("!!!! Close Comment!");
+                                    Debug.WriteLine("!!!! Close Comment!");
                                 }
                                 else
                                 {
@@ -187,7 +205,7 @@ namespace Shady
                             if (varying != null)
                             {
                                 isLineIgnored = true;
-                                Console.WriteLine("!!!! Varying!");
+                                Debug.WriteLine("!!!! Varying!");
                                 return;
                             }
 
@@ -196,7 +214,7 @@ namespace Shady
                             if (uniform != null)
                             {
                                 isLineIgnored = true;
-                                Console.WriteLine("!!!! Uniform!");
+                                Debug.WriteLine("!!!! Uniform!");
                                 return;
                             }
 
@@ -205,7 +223,7 @@ namespace Shady
                             if (precision != null)
                             {
                                 isLineIgnored = true;
-                                Console.WriteLine("!!!! Precision!");
+                                Debug.WriteLine("!!!! Precision!");
                                 return;
                             }
 
@@ -214,7 +232,7 @@ namespace Shady
                             if (main != null)
                             {
                                 inMain = true;
-                                Console.WriteLine("!!!! Main!");
+                                Debug.WriteLine("!!!! Main!");
                                 return;
                             }
 
@@ -222,7 +240,7 @@ namespace Shady
                             Token? define = parser.Match(line, TokenType.Define);
                             if (define != null)
                             {
-                                Console.WriteLine("!!!! Define!");
+                                Debug.WriteLine("!!!! Define!");
 
                                 remainingLine = define.RemainingInput.TrimStart();
 
@@ -243,7 +261,7 @@ namespace Shady
                             Token? assignment = parser.Match(line, TokenType.Assignment);
                             if (assignment != null)
                             {
-                                Console.WriteLine("!!!! Assignment!");
+                                Debug.WriteLine("!!!! Assignment!");
 
                                 remainingLine = assignment.Value;
 
@@ -261,7 +279,7 @@ namespace Shady
                             Token? function = parser.Match(line, TokenType.Function);
                             if (function != null)
                             {
-                                Console.WriteLine("!!!! Function!");
+                                Debug.WriteLine("!!!! Function!");
 
                                 remainingLine = function.Value;
 
@@ -280,7 +298,7 @@ namespace Shady
                             Token? closeComment = parser.Match(line, TokenType.CloseComment);
                             if (closeComment != null)
                             {
-                                Console.WriteLine("!!!! Close Comment!");
+                                Debug.WriteLine("!!!! Close Comment!");
                                 isCommented = false;
                             }
                         }
@@ -316,7 +334,7 @@ namespace Shady
                     }
                 }
 
-                Console.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
+                Debug.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
                 currentNode = currentNode.Next;
             }
         }
