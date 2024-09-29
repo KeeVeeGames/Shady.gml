@@ -13,13 +13,17 @@ namespace Shady
         Shady,
         Import,
         Inline,
+        MacroBegin,
+        MacroEnd,
         Variant,
         OpenParen,
         CloseParen,
         Identifier,
         Argument,
+        Name,
         Dot,
         Comma,
+        Empty,
 
         LineComment,
         OpenComment,
@@ -45,13 +49,17 @@ namespace Shady
             tokensRegexes[(int)TokenType.Shady] = new TokenRegex(TokenType.Shady, "^#pragma shady:", "'shady:'");
             tokensRegexes[(int)TokenType.Import] = new TokenRegex(TokenType.Import, "^import", "'import'");
             tokensRegexes[(int)TokenType.Inline] = new TokenRegex(TokenType.Inline, "^inline", "'inline'");
+            tokensRegexes[(int)TokenType.MacroBegin] = new TokenRegex(TokenType.MacroBegin, "^macro_begin", "'macro_begin'");
+            tokensRegexes[(int)TokenType.MacroEnd] = new TokenRegex(TokenType.MacroEnd, "^macro_end", "'macro_end'");
             tokensRegexes[(int)TokenType.Variant] = new TokenRegex(TokenType.Variant, "^variant", "'variant'");
             tokensRegexes[(int)TokenType.OpenParen] = new TokenRegex(TokenType.OpenParen, @"^\(", "open paren '('");
             tokensRegexes[(int)TokenType.CloseParen] = new TokenRegex(TokenType.CloseParen, @"^\)", "close paren ')'");
             tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/variable/macro identifier");
-            tokensRegexes[(int)TokenType.Argument] = new TokenRegex(TokenType.Argument, @"^\w+", "argument");
+            tokensRegexes[(int)TokenType.Argument] = new TokenRegex(TokenType.Argument, @"^\w+", "pragma argument");
+            tokensRegexes[(int)TokenType.Name] = new TokenRegex(TokenType.Name, @"^\w+", "macro name");
             tokensRegexes[(int)TokenType.Dot] = new TokenRegex(TokenType.Dot, @"^[.]", "dot '.'");
             tokensRegexes[(int)TokenType.Comma] = new TokenRegex(TokenType.Comma, @"^[,]", "comma ','");
+            tokensRegexes[(int)TokenType.Empty] = new TokenRegex(TokenType.Empty, @"^$", "nothing (end-of-line)");
 
             // free
             tokensRegexes[(int)TokenType.LineComment] = new TokenRegex(TokenType.LineComment, @"^\/{2}", "line comment '//'");

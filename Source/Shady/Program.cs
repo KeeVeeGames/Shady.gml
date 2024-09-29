@@ -75,11 +75,12 @@ namespace Shady
                 if (pragma != null)
                 {
                     //Console.WriteLine(pragma.Value);
-                    remainingLine = Regex.Replace(pragma.RemainingInput, @"\s", ""); /// remove all whitespaces
+                    remainingLine = Regex.Replace(pragma.RemainingInput, @"^\s", ""); /// remove leading whitespaces
+                    //remainingLine = Regex.Replace(pragma.RemainingInput, @"\s", ""); /// remove all whitespaces
                     //remainingLine = pragma.RemainingInput;
 
                     TokenType previousToken = TokenType.Shady;
-                    List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant };
+                    List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant, TokenType.MacroBegin, TokenType.MacroEnd };
                     List<Token> lineTokens = new List<Token>();
 
                     while (expectedTokens.Count != 0)
@@ -89,7 +90,8 @@ namespace Shady
                             Token token = parser.Expect(remainingLine, expectedTokens, previousToken);
                             //Console.WriteLine($"{token.Value}");
 
-                            remainingLine = token.RemainingInput;
+                            remainingLine = Regex.Replace(token.RemainingInput, @"^\s", ""); /// remove leading whitespaces;
+                            //remainingLine = token.RemainingInput;
                             expectedTokens.Clear();
 
                             switch (token.TokenType)
@@ -98,6 +100,10 @@ namespace Shady
                                 case TokenType.Inline:
                                 case TokenType.Variant:
                                     expectedTokens.Add(TokenType.OpenParen);
+                                    break;
+
+                                case TokenType.MacroBegin:
+                                    expectedTokens.Add(TokenType.Name);
                                     break;
 
                                 case TokenType.OpenParen:
@@ -127,6 +133,12 @@ namespace Shady
 
                                 case TokenType.Comma:
                                     expectedTokens.Add(TokenType.Argument);
+                                    break;
+
+                                case TokenType.CloseParen:
+                                case TokenType.Name:
+                                case TokenType.MacroEnd:
+                                    expectedTokens.Add(TokenType.Empty);
                                     break;
 
                                 default:
@@ -218,7 +230,7 @@ namespace Shady
                                 return;
                             }
 
-                            // Parse uniform
+                            // Parse precision
                             Token? precision = parser.Match(line, TokenType.Precision);
                             if (precision != null)
                             {
