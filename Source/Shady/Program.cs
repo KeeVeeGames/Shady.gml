@@ -59,6 +59,7 @@ namespace Shady
             bool isLineIgnored = false;
             bool inMain = false;
             string regionNameFunction = string.Empty;
+            LinkedList<string> regionNameMacros = new LinkedList<string>();
 
             LinkedListNode<ShaderLine>? currentNode = shader.Lines.First;
             while (currentNode != null)
@@ -165,9 +166,16 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
-                                int indexShader = 2;
-                                int indexIdentifier = 4;
 
+
+                            case TokenType.MacroBegin:
+                                regionNameMacros.AddLast(lineTokens[1].Value);
+                                isLineIgnored = true;
+                                break;
+
+                            case TokenType.MacroEnd:
+                                regionNameMacros.RemoveLast();
+                                isLineIgnored = true;
                                 break;
                         }
                     }
@@ -317,13 +325,21 @@ namespace Shady
                     })();
                 }
 
-                if (!isCommented && !isLineIgnored && !inMain)
+                if (!isCommented && !isLineIgnored)
                 {
-                    shader.AddToRegion(Shader.FullRegion, shaderLine);
-
-                    if (!string.IsNullOrEmpty(regionNameFunction))
+                    if (!inMain)
                     {
-                        shader.AddToRegion(regionNameFunction, shaderLine);
+                        shader.AddToRegion(Shader.FullRegion, shaderLine);
+
+                        if (!string.IsNullOrEmpty(regionNameFunction))
+                        {
+                            shader.AddToRegion(regionNameFunction, shaderLine);
+                        }
+                    }
+
+                    foreach (string regionNameMacro in regionNameMacros)
+                    {
+                        shader.AddToRegion($"{Shader.MacroRegion}_{regionNameMacro}", shaderLine);
                     }
                 }
 
@@ -342,6 +358,7 @@ namespace Shady
 
                     if (level == 0)
                     {
+                        inMain = false;
                         regionNameFunction = string.Empty;
                     }
                 }
