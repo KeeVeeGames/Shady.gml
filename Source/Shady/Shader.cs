@@ -70,6 +70,7 @@ namespace Shady
         public int LineIndex { get; }
         public string Line { get; }
         public string ShaderName { get; }
+        public (string ShaderName, string RegionName) ImportRegion;
         public ShaderLine(string shaderName, int lineIndex, string line)
         {
             LineIndex = lineIndex;

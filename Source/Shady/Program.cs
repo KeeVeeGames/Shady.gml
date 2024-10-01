@@ -153,6 +153,7 @@ namespace Shady
                         catch (UnexpectedExpression e)
                         {
                             expectedTokens.Clear();
+                            lineTokens.Clear();
                             Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
                         }
                     }
@@ -166,7 +167,28 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
+                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value;
 
+                                if (lineTokens[3].TokenType == TokenType.Dot)
+                                {
+                                    shaderLine.ImportRegion.RegionName = lineTokens[4].Value;
+                                }
+                                else
+                                {
+                                    shaderLine.ImportRegion.RegionName = Shader.FullRegion;
+                                }
+
+                                break;
+
+                            case TokenType.Inline:
+                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value;
+
+                                if (lineTokens[3].TokenType == TokenType.Dot)
+                                {
+                                    shaderLine.ImportRegion.RegionName = $"{Shader.MacroRegion}_{lineTokens[4].Value}";
+                                }
+
+                                break;
 
                             case TokenType.MacroBegin:
                                 regionNameMacros.AddLast(lineTokens[1].Value);
