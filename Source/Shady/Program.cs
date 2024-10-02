@@ -32,6 +32,8 @@ namespace Shady
 
             Parallel.ForEach(shaders, options, ParseTokens);
 
+            WriteShaders(shaders);
+
             Console.WriteLine("[Shady] Complete!");
         }
 
@@ -387,6 +389,94 @@ namespace Shady
 
                 Debug.WriteLine($"{shaderLine.ShaderName}.{level}: {shaderLine.Line}");
                 currentNode = currentNode.Next;
+            }
+
+            foreach (string regionName in shader.GetRegionNames())
+            {
+                string shaderDirectory = $"C:\\Users\\MusNik\\Desktop\\test\\{shader.Name}";
+                Directory.CreateDirectory(shaderDirectory);
+
+                LinkedList<ShaderLine>? region = shader.GetRegion(regionName);
+
+                if (region != null)
+                {
+                    using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{regionName}.fsh", false, Encoding.UTF8, 65536))
+                    {
+                        foreach (ShaderLine shaderLine in region)
+                        {
+                            textWriter.WriteLine(shaderLine.Line);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void WriteShaders(Dictionary<string, Shader> shaders)
+        {
+            foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
+            {
+                Shader shader = shaderKeyValue.Value;
+                HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
+                imported.Add((shaderKeyValue.Key, Shader.FullRegion));
+
+                string shaderDirectory = $"C:\\Users\\MusNik\\Desktop\\test\\__result";
+                Directory.CreateDirectory(shaderDirectory);
+
+                using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{shader.Name}", false, Encoding.UTF8, 65536))
+                {
+                    ExpandRegion(shaders, textWriter, shader.Lines, imported);
+                }
+            }
+        }
+
+        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported)
+        {
+            foreach (ShaderLine shaderLine in shaderLines)
+            {
+                if (shaderLine.ImportRegion == default)
+                {
+                    textWriter.WriteLine(shaderLine.Line);
+                }
+                else
+                {
+                    if (!shaderLine.ImportRegion.RegionName.Contains(Shader.MacroRegion))
+                    {
+                        if (imported.Contains((shaderLine.ImportRegion.ShaderName, Shader.FullRegion)))
+                        {
+                            continue;
+                        }
+
+                        if (imported.Contains(shaderLine.ImportRegion))
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (shaders.ContainsKey(shaderLine.ImportRegion.ShaderName))
+                    {
+                        Shader shader = shaders[shaderLine.ImportRegion.ShaderName];
+
+                        LinkedList<ShaderLine>? region = shader.GetRegion(shaderLine.ImportRegion.RegionName);
+
+                        if (region != null)
+                        {
+                            imported.Add(shaderLine.ImportRegion);
+
+                            textWriter.WriteLine($"// begin {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
+                            ExpandRegion(shaders, textWriter, region, imported);
+                            textWriter.WriteLine($"// end {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[Shady] Couldn't find shader {shaderLine.ImportRegion.RegionName} export inside {shaderLine.ImportRegion.ShaderName} shader");
+                        }
+
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Shady] Couldn't find shader {shaderLine.ImportRegion.ShaderName} or exports inside of it");
+                    }
+                }
             }
         }
     }
