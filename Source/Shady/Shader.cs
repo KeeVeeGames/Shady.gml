@@ -11,6 +11,7 @@ namespace Shady
         public const string MacroRegion = "__shady_macro";
         public string Name { get; }
         public LinkedList<ShaderLine> Lines { get; }
+        public string[]? VariantArguments;
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
         public Shader(string name)
@@ -71,6 +72,7 @@ namespace Shady
         public string Line { get; }
         public string ShaderName { get; }
         public (string ShaderName, string RegionName) ImportRegion;
+
         public ShaderLine(string shaderName, int lineIndex, string line)
         {
             LineIndex = lineIndex;

@@ -201,6 +201,14 @@ namespace Shady
                                 regionNameMacros.RemoveLast();
                                 isLineIgnored = true;
                                 break;
+
+                            case TokenType.Variant:
+                                shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
+                                    .Select(token => token.Value)
+                                    .ToArray();
+                                isLineIgnored = true;
+
+                                break;
                         }
                     }
                 }
@@ -424,7 +432,23 @@ namespace Shady
 
                 using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{shader.Name}", false, Encoding.UTF8, 65536))
                 {
-                    ExpandRegion(shaders, textWriter, shader.Lines, imported);
+                    if (shader.VariantArguments == null)
+                    {
+                        ExpandRegion(shaders, textWriter, shader.Lines, imported);
+                    }
+                    else
+                    {
+                        textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
+
+                        foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                        {
+                            textWriter.WriteLine($"#define {variantArgument}");
+                        }
+
+                        textWriter.WriteLine();
+
+                        ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                    }
                 }
             }
         }
@@ -462,9 +486,9 @@ namespace Shady
                         {
                             imported.Add(shaderLine.ImportRegion);
 
-                            textWriter.WriteLine($"// begin {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
+                            textWriter.WriteLine($"// begin import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
                             ExpandRegion(shaders, textWriter, region, imported);
-                            textWriter.WriteLine($"// end {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
+                            textWriter.WriteLine($"// end import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
                         }
                         else
                         {
