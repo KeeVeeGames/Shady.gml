@@ -1,14 +1,19 @@
-#pragma shady: import(sh_postprocess)
-#pragma shady: import(sh_postprocess.TextureFXAA)
-#pragma shady: inline(sh_postprocess.MACRO)
-#pragma shady: variant(sh_postprocess, GL_OES_standard_derivatives)
-#pragma shady: macro_begin MACRO
-#pragma shady: macro_end
+#pragma shady: import(sh_example_exports)
 
 varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
+#define SOME_DEFINE 0
+vec2 someVar = vec2(0.0, 0.0);
+
+bool func()
+{
+    return true;
+}
+
 void main()
 {
-    gl_FragColor = v_vColour * texture2D( gm_BaseTexture, v_vTexcoord );
+    #ifdef SOME_DEFINE
+        #pragma shady: inline(sh_example_exports.FRAGCOLOR)
+    #endif
 }

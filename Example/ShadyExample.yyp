@@ -30,11 +30,16 @@
   "isEcma":false,
   "LibraryEmitters":[],
   "MetaData":{
-    "IDEVersion":"2024.4.1.152",
+    "IDEVersion":"2024.6.2.162",
   },
   "name":"ShadyExample",
   "resources":[
+    {"id":{"name":"obj_test","path":"objects/obj_test/obj_test.yy",},},
     {"id":{"name":"rm_test","path":"rooms/rm_test/rm_test.yy",},},
+    {"id":{"name":"sh_example_exports","path":"shaders/sh_example_exports/sh_example_exports.yy",},},
+    {"id":{"name":"sh_example_otherfunc","path":"shaders/sh_example_otherfunc/sh_example_otherfunc.yy",},},
+    {"id":{"name":"sh_example_variant_base","path":"shaders/sh_example_variant_base/sh_example_variant_base.yy",},},
+    {"id":{"name":"sh_example_variant_child","path":"shaders/sh_example_variant_child/sh_example_variant_child.yy",},},
     {"id":{"name":"sh_example","path":"shaders/sh_example/sh_example.yy",},},
   ],
   "resourceType":"GMProject",
