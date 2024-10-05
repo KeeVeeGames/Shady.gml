@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ShadyPre": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Projects\\VisualStudio\\Shady.gml\\Example --pre"
+    },
+    "ShadyPost": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Projects\\VisualStudio\\Shady.gml\\Example --post"
+    }
+  }
+}

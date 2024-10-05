@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using static Shady.Parser;
 
 namespace Shady
-{
+{ 
     internal class Program
     {
         static Parser parser = new Parser();
@@ -14,27 +14,70 @@ namespace Shady
 
         static void Main(string[] args)
         {
-            string projectPath = @"C:\Projects\VisualStudio\Shady.gml\Example";
-            //string projectPath = @"C:\Users\MusNik\Documents\GameMakerStudio2\CloseYourEyes";
+            if (args.Length != 2)
+            {
+                Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady %YYprojectDir% --pre\" and \"Shady %YYprojectDir% --post\"");
+                return;
+            }
+
+            string projectPath = args[0];
             string shadersPath = projectPath + @"\shaders";
 
             string[] shaderFiles = Directory.GetFiles(projectPath, "*.fsh", SearchOption.AllDirectories);
 
-            foreach (string shaderFile in shaderFiles)
+            switch (args[1])
             {
-                string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
-                Shader shader = ParseShader(shaderFile);
-                shaders.Add(shaderName, shader);
+                case "--pre":
+                    foreach (string shaderFile in shaderFiles)
+                    {
+                        string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+                        Shader shader = ParseShader(shaderFile);
+                        shaders.Add(shaderName, shader);
+                    }
+
+                    const bool forceNonParallel = false;
+                    var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
+
+                    Console.WriteLine("[Shady] Parse shaders");
+
+                    Parallel.ForEach(shaders, options, ParseTokens);
+
+                    Console.WriteLine("[Shady] Backup original shaders");
+
+                    foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
+                    {
+                        Shader shader = shaderKeyValue.Value;
+
+                        if (shader.WillModify)
+                        {
+                            File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                        }
+                    }
+
+                    Console.WriteLine("[Shady] Write modified shaders");
+
+                    WriteShaders(shaders);
+
+                    Console.WriteLine("[Shady] Pre-Project Complete!");
+
+                    break;
+
+                case "--post":
+                    Console.WriteLine("[Shady] Bring back original shaders");
+
+                    foreach (string shaderFile in shaderFiles)
+                    {
+                        string backupFile = $"{shaderFile}_bak";
+                        if (File.Exists(backupFile))
+                        {
+                            File.Move(backupFile, shaderFile, true);
+                        }
+                    }
+
+                    Console.WriteLine("[Shady] Post-Project Complete!");
+
+                    break;
             }
-
-            const bool forceNonParallel = true;
-            var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
-
-            Parallel.ForEach(shaders, options, ParseTokens);
-
-            WriteShaders(shaders);
-
-            Console.WriteLine("[Shady] Complete!");
         }
 
         private static Shader ParseShader(string path)
@@ -433,31 +476,31 @@ namespace Shady
 
                 if (shader.WillModify)
                 {
-                HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
-                imported.Add((shaderKeyValue.Key, Shader.FullRegion));
+                    HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
+                    imported.Add((shaderKeyValue.Key, Shader.FullRegion));
 
                     using (TextWriter textWriter = new StreamWriter(shader.FileName, false, Encoding.UTF8, 65536))
-                {
-                    if (shader.VariantArguments == null)
                     {
-                        ExpandRegion(shaders, textWriter, shader.Lines, imported);
-                    }
-                    else
-                    {
-                        textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
-
-                        foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                        if (shader.VariantArguments == null)
                         {
-                            textWriter.WriteLine($"#define {variantArgument}");
+                            ExpandRegion(shaders, textWriter, shader.Lines, imported);
                         }
+                        else
+                        {
+                            textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
 
-                        textWriter.WriteLine();
+                            foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                            {
+                                textWriter.WriteLine($"#define {variantArgument}");
+                            }
 
-                        ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                            textWriter.WriteLine();
+
+                            ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                        }
                     }
                 }
             }
-        }
         }
 
         private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported)
