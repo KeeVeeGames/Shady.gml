@@ -9,15 +9,21 @@ namespace Shady
     {
         public const string FullRegion = "__shady_export";
         public const string MacroRegion = "__shady_macro";
+
         public string Name { get; }
+        public string FileName { get; }
         public LinkedList<ShaderLine> Lines { get; }
         public string[]? VariantArguments;
+        public bool WillModify { get; set; }
+
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
-        public Shader(string name)
+        public Shader(string name, string fileName)
         {
             Name = name;
+            FileName = fileName;
             Lines = new LinkedList<ShaderLine>();
+            WillModify = false;
 
             _regions = new Dictionary<string, LinkedList<ShaderLine>>();
         }

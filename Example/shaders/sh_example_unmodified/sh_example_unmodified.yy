@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"sh_example_unmodified",
+  "name":"sh_example_unmodified",
+  "parent":{
+    "name":"Shaders",
+    "path":"folders/Shaders.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

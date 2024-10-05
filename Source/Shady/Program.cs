@@ -39,7 +39,7 @@ namespace Shady
 
         private static Shader ParseShader(string path)
         {
-            Shader shader = new Shader(Path.GetFileName(path));
+            Shader shader = new Shader(Path.GetFileName(path), path);
 
             IEnumerable<string> lines = File.ReadLines(path);
             int i = -1;
@@ -180,6 +180,8 @@ namespace Shady
                                     shaderLine.ImportRegion.RegionName = Shader.FullRegion;
                                 }
 
+                                shader.WillModify = true;
+
                                 break;
 
                             case TokenType.Inline:
@@ -189,6 +191,18 @@ namespace Shady
                                 {
                                     shaderLine.ImportRegion.RegionName = $"{Shader.MacroRegion}_{lineTokens[4].Value}";
                                 }
+
+                                shader.WillModify = true;
+
+                                break;
+
+                            case TokenType.Variant:
+                                shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
+                                    .Select(token => token.Value)
+                                    .ToArray();
+                                isLineIgnored = true;
+
+                                shader.WillModify = true;
 
                                 break;
 
@@ -200,14 +214,6 @@ namespace Shady
                             case TokenType.MacroEnd:
                                 regionNameMacros.RemoveLast();
                                 isLineIgnored = true;
-                                break;
-
-                            case TokenType.Variant:
-                                shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
-                                    .Select(token => token.Value)
-                                    .ToArray();
-                                isLineIgnored = true;
-
                                 break;
                         }
                     }
@@ -424,13 +430,13 @@ namespace Shady
             foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
             {
                 Shader shader = shaderKeyValue.Value;
+
+                if (shader.WillModify)
+                {
                 HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
                 imported.Add((shaderKeyValue.Key, Shader.FullRegion));
 
-                string shaderDirectory = $"C:\\Users\\MusNik\\Desktop\\test\\__result";
-                Directory.CreateDirectory(shaderDirectory);
-
-                using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{shader.Name}", false, Encoding.UTF8, 65536))
+                    using (TextWriter textWriter = new StreamWriter(shader.FileName, false, Encoding.UTF8, 65536))
                 {
                     if (shader.VariantArguments == null)
                     {
@@ -451,6 +457,7 @@ namespace Shady
                     }
                 }
             }
+        }
         }
 
         private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported)

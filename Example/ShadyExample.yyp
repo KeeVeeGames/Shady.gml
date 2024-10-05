@@ -38,6 +38,7 @@
     {"id":{"name":"rm_test","path":"rooms/rm_test/rm_test.yy",},},
     {"id":{"name":"sh_example_exports","path":"shaders/sh_example_exports/sh_example_exports.yy",},},
     {"id":{"name":"sh_example_otherfunc","path":"shaders/sh_example_otherfunc/sh_example_otherfunc.yy",},},
+    {"id":{"name":"sh_example_unmodified","path":"shaders/sh_example_unmodified/sh_example_unmodified.yy",},},
     {"id":{"name":"sh_example_variant_base","path":"shaders/sh_example_variant_base/sh_example_variant_base.yy",},},
     {"id":{"name":"sh_example_variant_child","path":"shaders/sh_example_variant_child/sh_example_variant_child.yy",},},
     {"id":{"name":"sh_example","path":"shaders/sh_example/sh_example.yy",},},
