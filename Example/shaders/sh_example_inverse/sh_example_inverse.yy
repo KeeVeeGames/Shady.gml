@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"sh_example_inverse",
+  "name":"sh_example_inverse",
+  "parent":{
+    "name":"Examples",
+    "path":"folders/Shaders/Examples.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

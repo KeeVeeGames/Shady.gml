@@ -1,0 +1,24 @@
+varying vec2 v_vTexcoord;
+varying vec4 v_vColour;
+
+#pragma shady: import(sh_example_exports.GRAYSCALE_FACTOR)
+#pragma shady: import(sh_example_exports.grayscale)
+
+void main()
+{
+    #pragma shady: macro_begin FRAGCOLOR
+        gl_FragColor = v_vColour * texture2D(gm_BaseTexture, v_vTexcoord);
+    #pragma shady: macro_end
+    
+    #pragma shady: macro_begin INVERSE_GRAYSCALE
+    
+        #pragma shady: macro_begin INVERSE
+            gl_FragColor = vec4(vec3(1.0 - gl_FragColor.rgb), gl_FragColor.a);
+        #pragma shady: macro_end
+    
+        #pragma shady: macro_begin GRAYSCALE
+            gl_FragColor = grayscale(gl_FragColor);
+        #pragma shady: macro_end
+    
+    #pragma shady: macro_end
+}

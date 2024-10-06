@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"sh_example_flip_variant_noiseblue",
+  "name":"sh_example_flip_variant_noiseblue",
+  "parent":{
+    "name":"Examples",
+    "path":"folders/Shaders/Examples.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

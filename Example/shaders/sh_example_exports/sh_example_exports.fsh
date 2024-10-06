@@ -1,23 +1,22 @@
 varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
-#pragma shady: import(sh_example.func)
-#pragma shady: import(sh_example.someVar)
-#pragma shady: import(sh_example.SOME_DEFINE)
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
 
-#pragma shady: import(sh_example_otherfunc)
+#define GRAYSCALE_FACTOR vec3(0.2126, 0.7152, 0.0722)
+vec4 grayscale(vec4 color) {
+    return vec4(vec3(dot(color.rgb, GRAYSCALE_FACTOR)), color.a);
+}
 
-vec3 exportVar = vec3(0.0, 0.0, 0.0);
+vec2 flip(vec2 texcoord) {
+    return vec2(texcoord.x, 1.0 - texcoord.y);
+}
 
 void main()
 {
-    #pragma shady: macro_begin FRAGCOLOR
-    
-    #pragma shady: macro_begin TEXTURE
-    vec4 color = texture2D( gm_BaseTexture, v_vTexcoord );
-    #pragma shady: macro_end
+    vec4 color = texture2D(gm_BaseTexture, v_vTexcoord);
     
     gl_FragColor = v_vColour * color;
-    
-    #pragma shady: macro_end
 }
