@@ -496,7 +496,14 @@ namespace Shady
 
                             textWriter.WriteLine();
 
-                            ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                            if (shaders.ContainsKey(shader.VariantArguments[0]))
+                            {
+                                ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[Shady] Variant Error in {Path.GetFileName(shader.Name)}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                            }
                         }
                     }
                 }
