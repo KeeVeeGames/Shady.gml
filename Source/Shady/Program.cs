@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
@@ -23,16 +21,21 @@ namespace Shady
             string projectPath = args[0];
             string shadersPath = projectPath + @"\shaders";
 
-            string[] shaderFiles = Directory.GetFiles(projectPath, "*.fsh", SearchOption.AllDirectories);
+            string[] shaderFiles = Directory
+                .EnumerateFiles(shadersPath, "*.*", SearchOption.AllDirectories)
+                .Where(file => file.ToLower().EndsWith("fsh") || file.ToLower().EndsWith("vsh"))
+                .ToArray();
 
             switch (args[1])
             {
                 case "--pre":
                     try
                     {
+                        Restore(shaderFiles);
+
                         foreach (string shaderFile in shaderFiles)
                         {
-                            string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+                            string shaderName = Path.GetFileName(shaderFile);
                             Shader shader = ParseShader(shaderFile);
                             shaders.Add(shaderName, shader);
                         }
@@ -68,14 +71,7 @@ namespace Shady
 
                         Console.WriteLine("[Shady] Fatal Error. Trying to reverse backed-up shaders");
 
-                        foreach (string shaderFile in shaderFiles)
-                        {
-                            string backupFile = $"{shaderFile}_bak";
-                            if (File.Exists(backupFile))
-                            {
-                                File.Move(backupFile, shaderFile, true);
-                            }
-                        }
+                        Restore(shaderFiles);
 
                         Console.WriteLine("[Shady] Reversing complete!");
                     }
@@ -85,14 +81,7 @@ namespace Shady
                 case "--post":
                     Console.WriteLine("[Shady] Bring back original shaders");
 
-                    foreach (string shaderFile in shaderFiles)
-                    {
-                        string backupFile = $"{shaderFile}_bak";
-                        if (File.Exists(backupFile))
-                        {
-                            File.Move(backupFile, shaderFile, true);
-                        }
-                    }
+                    Restore(shaderFiles);
 
                     Console.WriteLine("[Shady] Post-Texture Complete!");
 
@@ -100,9 +89,21 @@ namespace Shady
             }
         }
 
+        private static void Restore(string[] shaderFiles)
+        {
+            foreach (string shaderFile in shaderFiles)
+            {
+                string backupFile = $"{shaderFile}_bak";
+                if (File.Exists(backupFile))
+                {
+                    File.Move(backupFile, shaderFile, true);
+                }
+            }
+        }
+
         private static Shader ParseShader(string path)
         {
-            Shader shader = new Shader(Path.GetFileName(path), path);
+            Shader shader = new Shader(path);
 
             IEnumerable<string> lines = File.ReadLines(path);
             int i = -1;
@@ -131,7 +132,6 @@ namespace Shady
             {
                 ShaderLine shaderLine = currentNode.Value;
                 string line = Regex.Replace(shaderLine.Line, @"^\s+", "");  /// remove leading whitespaces
-                //string line = Regex.Replace(shaderLine.Line, @"\s+", "");  /// remove all whitespaces
                 string remainingLine;
 
                 isLineIgnored = false;
@@ -140,10 +140,7 @@ namespace Shady
                 Token? pragma = parser.Match(line, TokenType.Shady);
                 if (pragma != null)
                 {
-                    //Console.WriteLine(pragma.Value);
                     remainingLine = Regex.Replace(pragma.RemainingInput, @"^\s", ""); /// remove leading whitespaces
-                    //remainingLine = Regex.Replace(pragma.RemainingInput, @"\s", ""); /// remove all whitespaces
-                    //remainingLine = pragma.RemainingInput;
 
                     TokenType previousToken = TokenType.Shady;
                     List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant, TokenType.MacroBegin, TokenType.MacroEnd };
@@ -154,10 +151,8 @@ namespace Shady
                         try
                         {
                             Token token = parser.Expect(remainingLine, expectedTokens, previousToken);
-                            //Console.WriteLine($"{token.Value}");
 
                             remainingLine = Regex.Replace(token.RemainingInput, @"^\s", ""); /// remove leading whitespaces;
-                            //remainingLine = token.RemainingInput;
                             expectedTokens.Clear();
 
                             switch (token.TokenType)
@@ -219,7 +214,7 @@ namespace Shady
                         {
                             expectedTokens.Clear();
                             lineTokens.Clear();
-                            Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
+                            Console.WriteLine($"[Shady] Syntax Error {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: {e.Message}");
                         }
                     }
 
@@ -232,7 +227,7 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
-                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value;
+                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
                                 {
@@ -248,7 +243,7 @@ namespace Shady
                                 break;
 
                             case TokenType.Inline:
-                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value;
+                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
                                 {
@@ -263,8 +258,9 @@ namespace Shady
                                 shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
                                     .Select(token => token.Value)
                                     .ToArray();
-                                isLineIgnored = true;
 
+                                shader.VariantArguments[0] += shader.Extension;
+                                isLineIgnored = true;
                                 shader.WillModify = true;
 
                                 break;
@@ -372,7 +368,7 @@ namespace Shady
                                 }
                                 catch (UnexpectedExpression e)
                                 {
-                                    Console.WriteLine($"[Shady] Syntax Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
+                                    Console.WriteLine($"[Shady] Syntax Error in {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: {e.Message}");
                                 }
 
                                 return;
@@ -522,7 +518,7 @@ namespace Shady
                             }
                             else
                             {
-                                Console.WriteLine($"[Shady] Variant Error in {Path.GetFileName(shader.Name)}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
                             }
                         }
                     }
@@ -569,13 +565,13 @@ namespace Shady
                         }
                         else
                         {
-                            Console.WriteLine($"[Shady] Import Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.RegionName}' from '{shaderLine.ImportRegion.ShaderName}', identifier doesn't exist!");
+                            Console.WriteLine($"[Shady] Import Error in {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.RegionName}' from '{shaderLine.ImportRegion.ShaderName}', identifier doesn't exist!");
                         }
 
                     }
                     else
                     {
-                        Console.WriteLine($"[Shady] Import Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.ShaderName}', shader doesn't exist or has no exported identifiers!");
+                        Console.WriteLine($"[Shady] Import Error in {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.ShaderName}', shader doesn't exist or has no exported identifiers!");
                     }
                 }
             }

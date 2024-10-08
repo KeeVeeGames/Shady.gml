@@ -1,6 +1,6 @@
 var px = room_width / 4;
 var py = room_height / 3;
-var offset = 140;
+var offset = 160;
 
 draw_text(px, py - offset, "sh_example_grayscale_noise\n(import full)");
 shader_set(sh_example_grayscale_noise);

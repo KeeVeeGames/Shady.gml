@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Shady
+﻿namespace Shady
 {
     internal class Shader
     {
@@ -11,6 +6,7 @@ namespace Shady
         public const string MacroRegion = "__shady_macro";
 
         public string Name { get; }
+        public string Extension { get; }
         public string FileName { get; }
         public LinkedList<ShaderLine> Lines { get; }
         public string[]? VariantArguments;
@@ -18,9 +14,10 @@ namespace Shady
 
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
-        public Shader(string name, string fileName)
+        public Shader(string fileName)
         {
-            Name = name;
+            Name = Path.GetFileName(fileName);
+            Extension = Path.GetExtension(fileName);
             FileName = fileName;
             Lines = new LinkedList<ShaderLine>();
             WillModify = false;
