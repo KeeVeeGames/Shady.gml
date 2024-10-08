@@ -69,11 +69,11 @@ namespace Shady
                     {
                         Console.WriteLine($"[Shady] {ex.ToString()}");
 
-                        Console.WriteLine("[Shady] Fatal Error. Trying to reverse backed-up shaders");
+                        Console.WriteLine("[Shady] Fatal Error. Trying to restore backed-up shaders");
 
                         Restore(shaderFiles);
 
-                        Console.WriteLine("[Shady] Reversing complete!");
+                        Console.WriteLine("[Shady] Restoring complete!");
                     }
 
                     break;
@@ -495,7 +495,7 @@ namespace Shady
                     HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
                     imported.Add((shaderKeyValue.Key, Shader.FullRegion));
 
-                    using (TextWriter textWriter = new StreamWriter(shader.FileName, false, Encoding.UTF8, 65536))
+                    using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
                     {
                         if (shader.VariantArguments == null)
                         {
@@ -522,6 +522,8 @@ namespace Shady
                             }
                         }
                     }
+
+                    File.Copy($"{shader.FileName}_mod", shader.FileName, true);
                 }
             }
         }
