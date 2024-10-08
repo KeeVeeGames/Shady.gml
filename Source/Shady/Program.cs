@@ -28,37 +28,57 @@ namespace Shady
             switch (args[1])
             {
                 case "--pre":
-                    foreach (string shaderFile in shaderFiles)
+                    try
                     {
-                        string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
-                        Shader shader = ParseShader(shaderFile);
-                        shaders.Add(shaderName, shader);
-                    }
-
-                    const bool forceNonParallel = false;
-                    var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
-
-                    Console.WriteLine("[Shady] Parse shaders");
-
-                    Parallel.ForEach(shaders, options, ParseTokens);
-
-                    Console.WriteLine("[Shady] Backup original shaders");
-
-                    foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
-                    {
-                        Shader shader = shaderKeyValue.Value;
-
-                        if (shader.WillModify)
+                        foreach (string shaderFile in shaderFiles)
                         {
-                            File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                            string shaderName = Path.GetFileNameWithoutExtension(shaderFile);
+                            Shader shader = ParseShader(shaderFile);
+                            shaders.Add(shaderName, shader);
                         }
+
+                        const bool forceNonParallel = false;
+                        var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
+
+                        Console.WriteLine("[Shady] Parse shaders");
+
+                        Parallel.ForEach(shaders, options, ParseTokens);
+
+                        Console.WriteLine("[Shady] Backup original shaders");
+
+                        foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
+                        {
+                            Shader shader = shaderKeyValue.Value;
+
+                            if (shader.WillModify)
+                            {
+                                File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                            }
+                        }
+
+                        Console.WriteLine("[Shady] Write modified shaders");
+
+                        WriteShaders(shaders);
+
+                        Console.WriteLine("[Shady] Pre-Build Complete!");
                     }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Shady] {ex.ToString()}");
 
-                    Console.WriteLine("[Shady] Write modified shaders");
+                        Console.WriteLine("[Shady] Fatal Error. Trying to reverse backed-up shaders");
 
-                    WriteShaders(shaders);
+                        foreach (string shaderFile in shaderFiles)
+                        {
+                            string backupFile = $"{shaderFile}_bak";
+                            if (File.Exists(backupFile))
+                            {
+                                File.Move(backupFile, shaderFile, true);
+                            }
+                        }
 
-                    Console.WriteLine("[Shady] Pre-Project Complete!");
+                        Console.WriteLine("[Shady] Reversing complete!");
+                    }
 
                     break;
 
@@ -74,7 +94,7 @@ namespace Shady
                         }
                     }
 
-                    Console.WriteLine("[Shady] Post-Project Complete!");
+                    Console.WriteLine("[Shady] Post-Texture Complete!");
 
                     break;
             }
@@ -352,7 +372,7 @@ namespace Shady
                                 }
                                 catch (UnexpectedExpression e)
                                 {
-                                    Console.WriteLine($"[Shady] Syntax Error {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
+                                    Console.WriteLine($"[Shady] Syntax Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: {e.Message}");
                                 }
 
                                 return;
@@ -448,24 +468,24 @@ namespace Shady
                 currentNode = currentNode.Next;
             }
 
-            foreach (string regionName in shader.GetRegionNames())
-            {
-                string shaderDirectory = $"C:\\Users\\MusNik\\Desktop\\test\\{shader.Name}";
-                Directory.CreateDirectory(shaderDirectory);
+            //foreach (string regionName in shader.GetRegionNames())
+            //{
+            //    string shaderDirectory = $"C:\\Users\\MusNik\\Desktop\\test\\{shader.Name}";
+            //    Directory.CreateDirectory(shaderDirectory);
 
-                LinkedList<ShaderLine>? region = shader.GetRegion(regionName);
+            //    LinkedList<ShaderLine>? region = shader.GetRegion(regionName);
 
-                if (region != null)
-                {
-                    using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{regionName}.fsh", false, Encoding.UTF8, 65536))
-                    {
-                        foreach (ShaderLine shaderLine in region)
-                        {
-                            textWriter.WriteLine(shaderLine.Line);
-                        }
-                    }
-                }
-            }
+            //    if (region != null)
+            //    {
+            //        using (TextWriter textWriter = new StreamWriter($"{shaderDirectory}\\{regionName}.fsh", false, Encoding.UTF8, 65536))
+            //        {
+            //            foreach (ShaderLine shaderLine in region)
+            //            {
+            //                textWriter.WriteLine(shaderLine.Line);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         private static void WriteShaders(Dictionary<string, Shader> shaders)
@@ -549,13 +569,13 @@ namespace Shady
                         }
                         else
                         {
-                            Console.WriteLine($"[Shady] Couldn't find shader {shaderLine.ImportRegion.RegionName} export inside {shaderLine.ImportRegion.ShaderName} shader");
+                            Console.WriteLine($"[Shady] Import Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.RegionName}' from '{shaderLine.ImportRegion.ShaderName}', identifier doesn't exist!");
                         }
 
                     }
                     else
                     {
-                        Console.WriteLine($"[Shady] Couldn't find shader {shaderLine.ImportRegion.ShaderName} or exports inside of it");
+                        Console.WriteLine($"[Shady] Import Error in {Path.GetFileName(shaderLine.ShaderName)}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.ShaderName}', shader doesn't exist or has no exported identifiers!");
                     }
                 }
             }
