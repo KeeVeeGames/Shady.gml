@@ -1,0 +1,12 @@
+﻿varying vec2 v_vTexcoord;
+varying vec4 v_vColour;
+
+void main()
+{
+// begin import sh_example_macros.fsh.__shady_macro_FRAGCOLOR
+        gl_FragColor = v_vColour * texture2D(gm_BaseTexture, v_vTexcoord);
+// end import sh_example_macros.fsh.__shady_macro_FRAGCOLOR
+// begin import sh_example_macros.fsh.__shady_macro_INVERSE
+            gl_FragColor = vec4(vec3(1.0 - gl_FragColor.rgb), gl_FragColor.a);
+// end import sh_example_macros.fsh.__shady_macro_INVERSE
+}

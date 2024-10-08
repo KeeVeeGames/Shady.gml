@@ -1,0 +1,41 @@
+﻿varying vec2 v_vTexcoord;
+varying vec4 v_vColour;
+
+// begin import sh_example_exports.fsh.random
+float random(vec2 st) {
+    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+}
+// end import sh_example_exports.fsh.random
+// begin import sh_example_exports.fsh.flip
+vec2 flip(vec2 texcoord) {
+    return vec2(texcoord.x, 1.0 - texcoord.y);
+}
+// end import sh_example_exports.fsh.flip
+
+vec4 color_channel(vec4 color)
+{
+    #ifdef RED
+        return vec4(color.r, 0.0, 0.0, color.a);
+    #endif
+    
+    #ifdef GREEN
+        return vec4(0.0, color.g, 0.0, color.a);
+    #endif
+    
+    #ifdef BLUE
+        return vec4(0.0, 0.0, color.b, color.a);
+    #endif
+    
+    return color;
+}
+
+void main()
+{
+    vec4 color = color_channel(texture2D(gm_BaseTexture, flip(v_vTexcoord)));
+    
+    #ifdef NOISE
+        color *= (1.0 - random(v_vTexcoord) / 2.0);
+    #endif
+    
+    gl_FragColor = v_vColour * color;
+}

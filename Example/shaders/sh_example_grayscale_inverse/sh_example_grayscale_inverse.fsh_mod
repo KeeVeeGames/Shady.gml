@@ -1,0 +1,24 @@
+﻿varying vec2 v_vTexcoord;
+varying vec4 v_vColour;
+
+// begin import sh_example_macros.fsh.__shady_export
+// begin import sh_example_exports.fsh.GRAYSCALE_FACTOR
+#define GRAYSCALE_FACTOR vec3(0.2126, 0.7152, 0.0722)
+// end import sh_example_exports.fsh.GRAYSCALE_FACTOR
+// begin import sh_example_exports.fsh.grayscale
+vec4 grayscale(vec4 color) {
+    return vec4(vec3(dot(color.rgb, GRAYSCALE_FACTOR)), color.a);
+}
+// end import sh_example_exports.fsh.grayscale
+// end import sh_example_macros.fsh.__shady_export
+
+void main()
+{
+// begin import sh_example_macros.fsh.__shady_macro_FRAGCOLOR
+        gl_FragColor = v_vColour * texture2D(gm_BaseTexture, v_vTexcoord);
+// end import sh_example_macros.fsh.__shady_macro_FRAGCOLOR
+// begin import sh_example_macros.fsh.__shady_macro_INVERSE_GRAYSCALE
+            gl_FragColor = vec4(vec3(1.0 - gl_FragColor.rgb), gl_FragColor.a);
+            gl_FragColor = grayscale(gl_FragColor);
+// end import sh_example_macros.fsh.__shady_macro_INVERSE_GRAYSCALE
+}

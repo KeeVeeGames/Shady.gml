@@ -1,3 +1,3 @@
 #!/bin/bash
 
-${0%/*}/#shady/Shady ${0%/*} --pre
+${0%/*}/#shady/Shady ${0%/*} --post
