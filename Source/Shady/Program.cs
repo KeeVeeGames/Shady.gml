@@ -14,12 +14,12 @@ namespace Shady
         {
             if (args.Length != 2)
             {
-                Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady %YYprojectDir% --pre\" and \"Shady %YYprojectDir% --post\"");
+                Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady PrjectDir --pre\" and \"Shady ProjectDir --post\"");
                 return;
             }
 
             string projectPath = args[0];
-            string shadersPath = projectPath + @"\shaders";
+            string shadersPath = Path.Join(projectPath, "shaders");
 
             string[] shaderFiles = Directory
                 .EnumerateFiles(shadersPath, "*.*", SearchOption.AllDirectories)
