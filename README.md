@@ -5,7 +5,7 @@
 
 The tool is integrated into the compilation process via compiler scripts so you can write reusable shaders inside standard GameMaker shader files with built-in or any other code editor.
 
-It is tested to work with **GLSL ES** language and should also work with **GLSL**. **HLSL** is not (yet?) supported.
+It is still in Beta and tested to work with **GLSL ES** language but should also work with **GLSL**. **HLSL** is not (yet?) supported.
 
 ## Installation
 1. Download the latest executable from the [releases page](https://github.com/KeeVeeGames/Shady.gml/releases) for your OS and architecture.
