@@ -185,6 +185,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   
   void main()
   {
+      // use #ifdef, #if defined() or #elif defined() to define variant keywords
       #ifdef BLUR
           vec4 color = texture2DBlur(gm_BaseTexture, v_vTexcoord);
       #else
