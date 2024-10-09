@@ -109,6 +109,8 @@ Vertex and fragment shaders have separate databases so you can't import identifi
       gl_FragColor = v_vColour * grayscale(color);  // you can then use imported stuff like it's there
   }
   ```
+  \
+  You can import functions, variables and `#define`s. `varying`s, `uniform`s and `main` function are not exported.
 </details>
 
 #
