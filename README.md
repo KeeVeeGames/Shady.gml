@@ -72,8 +72,8 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   \
   `sh_functions.fsh`
   ```glsl
-  varying vec2 v_vTexcoord;  // ignored for import
-  varying vec4 v_vColour;    // ignored for import
+  varying vec2 v_vTexcoord;
+  varying vec4 v_vColour;
 
   float random(vec2 st) {
       return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
@@ -86,7 +86,6 @@ Vertex and fragment shaders have separate databases so you can't import identifi
 
   const vec2 textureScale = vec2(4096.0 / 1920.0, 4096.0 / 1080.0);
 
-  // ignored for import
   void main() {
       vec4 color = texture2D(gm_BaseTexture, v_vTexcoord);
     
@@ -110,7 +109,8 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   }
   ```
   \
-  You can import functions, variables and `#define`s. `varying`s, `uniform`s and `main` function are not exported.
+  You can import functions, variables and `#define`s.\
+  `varying`s, `uniform`s and `main` function are not exported.
 </details>
 
 #
