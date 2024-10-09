@@ -48,7 +48,7 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
 </details>
 
 ## How to use
-**Shady** is using a custom `#pragma` syntax with special directives. This won't break the shader compiler as unknown custom pragmas are just ignored by it.
+**Shady** is using a custom `#pragma` syntax with special directives. This isn't breaking the standard shader compiler as unknown custom pragmas are just ignored by it.
 
 You can write shady directives right in the GameMaker shader files, both vertex and fragment.
 
