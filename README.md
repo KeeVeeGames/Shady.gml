@@ -207,7 +207,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   ```glsl
   #pragma shady: variant(sh_shader_base, BLUR, DARKEN) // will generate a variant of sh_shader_base with BLUR and DARKEN enabled
 
-  // the rest is ignored
+  // the rest is ignored and will be replaced with base shader code
   varying vec2 v_vTexcoord;
   varying vec4 v_vColour;
 
