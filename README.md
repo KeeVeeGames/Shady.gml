@@ -55,8 +55,8 @@ You can write shady directives right in the GameMaker shader files, both vertex 
 Vertex and fragment shaders have separate databases so you can't import identifiers from vertex shader into fragment shader.
 
 > [!NOTE]
-> Shader files that are only used as a library to import to other shaders are still required to have a `main` function and standard `varying`s to not generate errors on syntax checking / compilation.
-> Although this makes it possible to use those shaders as normal in the game.
+> Shader files that are only used as a library to import to other shaders are still required to have a `main` function (possibly blank) to not generate errors on compilation.\
+> Although, as those shaders are compiled and presented in the project it is possible to utilize them for something useful in the game.
 
 #
 * ### `import` directive:
@@ -72,9 +72,6 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   \
   `sh_functions.fsh`
   ```glsl
-  varying vec2 v_vTexcoord;
-  varying vec4 v_vColour;
-
   float random(vec2 st) {
       return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
   }
@@ -86,11 +83,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
 
   const vec2 textureScale = vec2(4096.0 / 1920.0, 4096.0 / 1080.0);
 
-  void main() {
-      vec4 color = texture2D(gm_BaseTexture, v_vTexcoord);
-    
-      gl_FragColor = v_vColour * color;
-  }
+  void main() {}
   ```
   \
   `sh_shader.fsh`
@@ -109,8 +102,8 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   }
   ```
   \
-  You can import functions, variables and `#define`s.\
-  `varying`s, `uniform`s and `main` function are not exported.
+  You can import functions, variables and `#define`s. `varying`s, `uniform`s and `main` function are not exported.\
+  Nested imports are also supported, so `A` imports `B` which imports `C`, with duplicates resolved.
 </details>
 
 #
@@ -223,6 +216,16 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   \
   Original shader can also be used as normal.
 </details>
+
+## Troubleshooting
+* **Defender<sup>tm</sup> is too defensive**. Some anti-viruses may yield a false-positive warning on the binaries. There's nothing I can do for now besides waiting for binaries to get trusted over time or getting a paid code sign certificate, which is not cost-effective for the current state of the project. If you're not sure, you can compile the tool yourself from sources using Visual Studio and .NET 8.0.
+* **"Project Directory Modified"**. To not see that GameMaker message-box every time any shader is processed navigate to `Preferences` > `General Settings` and enable `Automatically reload changed files`.
+  <details>
+    <summary><b>Screenshot</b></summary>
+
+    ![image](https://github.com/user-attachments/assets/8ca4f138-bc2a-478c-b23b-046b94e8eee4)
+
+  </details>
 
 ## Alternatives and inspirations:
 * **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)** – uses a custom syntax and is not integrated with the compilation process but supports HLSL.
