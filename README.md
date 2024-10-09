@@ -221,9 +221,10 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   Original shader can also be used as normal.
 </details>
 
-## Alternatives:
-* **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)**. Uses a custom syntax and is not integrated with the compilation process but supports HLSL.
-* **[glslfy](https://github.com/glslify/glslify)**. Older brother for non-GameMaker users.
+## Alternatives and inspirations:
+* **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)** – uses a custom syntax and is not integrated with the compilation process but supports HLSL.
+* **[glslfy](https://github.com/glslify/glslify)** – older brother for non-GameMaker users.
+* **[Unity Shader Variants](https://docs.unity3d.com/Manual/shader-variants.html)**.
 
 ## TODO:
 * **Optimize caching to not rewrite unmodified shaders.**
