@@ -8,13 +8,9 @@ vec4 color_channel(vec4 color)
 {
     #ifdef RED
         return vec4(color.r, 0.0, 0.0, color.a);
-    #endif
-    
-    #ifdef GREEN
+    #elif defined(GREEN)
         return vec4(0.0, color.g, 0.0, color.a);
-    #endif
-    
-    #ifdef BLUE
+    #elif defined(BLUE)
         return vec4(0.0, 0.0, color.b, color.a);
     #endif
     
