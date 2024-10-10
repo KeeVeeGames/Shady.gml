@@ -1,4 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
@@ -53,7 +56,7 @@ namespace Shady
                         {
                             Shader shader = shaderKeyValue.Value;
 
-                            if (shader.WillModify)
+                            if (shader.WillModify || shader.IsCahced)
                             {
                                 File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
                             }
@@ -104,6 +107,24 @@ namespace Shady
         private static Shader ParseShader(string path)
         {
             Shader shader = new Shader(path);
+
+            // cache checking
+            if (File.Exists($"{path}_mod"))
+            {
+                IEnumerable<string> modLines = File.ReadLines($"{path}_mod");
+
+                string modLineFirst = modLines.First();
+                if (modLineFirst.StartsWith("// Date: "))
+                {
+                    string modDateString = modLineFirst.Replace("// Date: ", "");
+                    DateTime modDate = DateTime.ParseExact(modDateString, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+
+                    if (modDate.CompareTo(File.GetLastWriteTime(path)) == 0)
+                    {
+                        shader.IsCahced = true;
+                    }
+                }
+            }
 
             IEnumerable<string> lines = File.ReadLines(path);
             int i = -1;
@@ -227,6 +248,8 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
+                                if (shader.IsCahced) break;
+
                                 shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
@@ -243,6 +266,8 @@ namespace Shady
                                 break;
 
                             case TokenType.Inline:
+                                if (shader.IsCahced) break;
+
                                 shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
@@ -255,6 +280,8 @@ namespace Shady
                                 break;
 
                             case TokenType.Variant:
+                                if (shader.IsCahced) break;
+
                                 shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
                                     .Select(token => token.Value)
                                     .ToArray();
@@ -490,39 +517,50 @@ namespace Shady
             {
                 Shader shader = shaderKeyValue.Value;
 
-                if (shader.WillModify)
+                if (!shader.IsCahced)
                 {
-                    HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
-                    imported.Add((shaderKeyValue.Key, Shader.FullRegion));
-
-                    using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
+                    if (shader.WillModify)
                     {
-                        if (shader.VariantArguments == null)
+                        HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
+                        imported.Add((shaderKeyValue.Key, Shader.FullRegion));
+
+                        using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
                         {
-                            ExpandRegion(shaders, textWriter, shader.Lines, imported);
-                        }
-                        else
-                        {
-                            textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
+                            // write date of original file into mod file for caching
+                            DateTime date = File.GetLastWriteTime(shader.FileName);
+                            textWriter.WriteLine($"// Date: {date.ToString("O")}");
 
-                            foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                            if (shader.VariantArguments == null)
                             {
-                                textWriter.WriteLine($"#define {variantArgument}");
-                            }
-
-                            textWriter.WriteLine();
-
-                            if (shaders.ContainsKey(shader.VariantArguments[0]))
-                            {
-                                ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                                ExpandRegion(shaders, textWriter, shader.Lines, imported);
                             }
                             else
                             {
-                                Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
+
+                                foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                                {
+                                    textWriter.WriteLine($"#define {variantArgument}");
+                                }
+
+                                textWriter.WriteLine();
+
+                                if (shaders.ContainsKey(shader.VariantArguments[0]))
+                                {
+                                    ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                }
                             }
                         }
-                    }
 
+                        File.Copy($"{shader.FileName}_mod", shader.FileName, true);
+                    }
+                }
+                else
+                {
                     File.Copy($"{shader.FileName}_mod", shader.FileName, true);
                 }
             }

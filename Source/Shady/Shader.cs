@@ -11,6 +11,7 @@
         public LinkedList<ShaderLine> Lines { get; }
         public string[]? VariantArguments;
         public bool WillModify { get; set; }
+        public bool IsCahced { get; set; }
 
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
@@ -21,6 +22,7 @@
             FileName = fileName;
             Lines = new LinkedList<ShaderLine>();
             WillModify = false;
+            IsCahced = false;
 
             _regions = new Dictionary<string, LinkedList<ShaderLine>>();
         }

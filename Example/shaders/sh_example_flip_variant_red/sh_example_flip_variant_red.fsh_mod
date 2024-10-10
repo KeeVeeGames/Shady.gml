@@ -1,4 +1,5 @@
-﻿// variant of sh_example_flip_base.fsh
+﻿// Date: 2024-10-10T16:58:56.9622901+04:00
+// variant of sh_example_flip_base.fsh
 #define RED
 
 varying vec2 v_vTexcoord;
@@ -19,13 +20,9 @@ vec4 color_channel(vec4 color)
 {
     #ifdef RED
         return vec4(color.r, 0.0, 0.0, color.a);
-    #endif
-    
-    #ifdef GREEN
+    #elif defined(GREEN)
         return vec4(0.0, color.g, 0.0, color.a);
-    #endif
-    
-    #ifdef BLUE
+    #elif defined(BLUE)
         return vec4(0.0, 0.0, color.b, color.a);
     #endif
     
