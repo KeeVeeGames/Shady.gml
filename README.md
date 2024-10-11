@@ -47,6 +47,13 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
   ```
 </details>
 
+5. You may also want to add these lines to `.gitignore` to remove temp Shady files from Git:
+
+```gitignore
+*.fsh_mod
+*.vsh_mod
+```
+
 ## How to use
 **Shady** is using a custom `#pragma` syntax with special directives. This isn't breaking the standard shader compiler as unknown custom pragmas are just ignored by it.
 
