@@ -44,7 +44,7 @@ namespace Shady
                         }
 
                         const bool forceNonParallel = false;
-                        var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : -1 };
+                        var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : 4 };
 
                         Console.WriteLine("[Shady] Parse shaders");
 
@@ -56,7 +56,7 @@ namespace Shady
                         {
                             Shader shader = shaderKeyValue.Value;
 
-                            if (shader.WillModify || shader.IsCahced)
+                            if (shader.WillModify)
                             {
                                 File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
                             }
@@ -248,8 +248,6 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
-                                if (shader.IsCahced) break;
-
                                 shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
@@ -266,8 +264,6 @@ namespace Shady
                                 break;
 
                             case TokenType.Inline:
-                                if (shader.IsCahced) break;
-
                                 shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
 
                                 if (lineTokens[3].TokenType == TokenType.Dot)
@@ -280,8 +276,6 @@ namespace Shady
                                 break;
 
                             case TokenType.Variant:
-                                if (shader.IsCahced) break;
-
                                 shader.VariantArguments = lineTokens.Where(token => token.TokenType is TokenType.Identifier or TokenType.Argument)
                                     .Select(token => token.Value)
                                     .ToArray();
@@ -516,57 +510,80 @@ namespace Shady
             foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
             {
                 Shader shader = shaderKeyValue.Value;
+                bool isDirty = false;
 
-                if (!shader.IsCahced)
+                //if (!shader.IsCahced)
+                //{
+                if (shader.WillModify)
                 {
-                    if (shader.WillModify)
-                    {
-                        HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
-                        imported.Add((shaderKeyValue.Key, Shader.FullRegion));
+                    HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
+                    imported.Add((shaderKeyValue.Key, Shader.FullRegion));
 
+                    //using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
+                    using (TextWriter textWriter = new StringWriter())
+                    {
+                        // write date of original file into mod file for caching
+                        DateTime date = File.GetLastWriteTime(shader.FileName);
+                        textWriter.WriteLine($"// Date: {date.ToString("O")}");
+
+                        if (shader.VariantArguments == null)
+                        {
+                            isDirty = shader.IsCahced ? isDirty : true;
+                            ExpandRegion(shaders, textWriter, shader.Lines, imported, ref isDirty);
+                        }
+                        else
+                        {
+                            textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
+
+                            foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                            {
+                                textWriter.WriteLine($"#define {variantArgument}");
+                            }
+
+                            textWriter.WriteLine();
+
+                            if (shaders.ContainsKey(shader.VariantArguments[0]))
+                            {
+                                Shader variantBaseShader = shaders[shader.VariantArguments[0]];
+
+                                isDirty = variantBaseShader.IsCahced ? isDirty : true;
+                                ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, ref isDirty);
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                            }
+                        }
+
+                        if (isDirty)
+                        {
+                            File.WriteAllText($"{shader.FileName}_mod", textWriter.ToString());
+                        }
+                    }
+
+                    File.Copy($"{shader.FileName}_mod", shader.FileName, true);
+                }
+                else
+                {
+                    if (!File.Exists($"{shader.FileName}_mod") || !shader.IsCahced)
+                    {
                         using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
                         {
                             // write date of original file into mod file for caching
                             DateTime date = File.GetLastWriteTime(shader.FileName);
                             textWriter.WriteLine($"// Date: {date.ToString("O")}");
-
-                            if (shader.VariantArguments == null)
-                            {
-                                ExpandRegion(shaders, textWriter, shader.Lines, imported);
-                            }
-                            else
-                            {
-                                textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
-
-                                foreach (string variantArgument in shader.VariantArguments.Skip(1))
-                                {
-                                    textWriter.WriteLine($"#define {variantArgument}");
-                                }
-
-                                textWriter.WriteLine();
-
-                                if (shaders.ContainsKey(shader.VariantArguments[0]))
-                                {
-                                    ExpandRegion(shaders, textWriter, shaders[shader.VariantArguments[0]].Lines, imported);
-                                }
-                                else
-                                {
-                                    Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
-                                }
-                            }
                         }
-
-                        File.Copy($"{shader.FileName}_mod", shader.FileName, true);
                     }
                 }
-                else
-                {
-                    File.Copy($"{shader.FileName}_mod", shader.FileName, true);
-                }
+                //}
+                //else
+                //{
+                //    File.Copy($"{shader.FileName}_mod", shader.FileName, true);
+                //}
             }
         }
 
-        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported)
+        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported, ref bool isDirty)
         {
             foreach (ShaderLine shaderLine in shaderLines)
             {
@@ -598,9 +615,10 @@ namespace Shady
                         if (region != null)
                         {
                             imported.Add(shaderLine.ImportRegion);
+                            isDirty = shader.IsCahced ? isDirty : true;
 
                             textWriter.WriteLine($"// begin import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
-                            ExpandRegion(shaders, textWriter, region, imported);
+                            ExpandRegion(shaders, textWriter, region, imported, ref isDirty);
                             textWriter.WriteLine($"// end import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
                         }
                         else
