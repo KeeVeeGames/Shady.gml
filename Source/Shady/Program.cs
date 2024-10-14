@@ -510,16 +510,13 @@ namespace Shady
             foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
             {
                 Shader shader = shaderKeyValue.Value;
-                bool isDirty = false;
+                bool isDirty = !shader.IsCahced;
 
-                //if (!shader.IsCahced)
-                //{
                 if (shader.WillModify)
                 {
                     HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
                     imported.Add((shaderKeyValue.Key, Shader.FullRegion));
 
-                    //using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
                     using (TextWriter textWriter = new StringWriter())
                     {
                         // write date of original file into mod file for caching
@@ -528,7 +525,6 @@ namespace Shady
 
                         if (shader.VariantArguments == null)
                         {
-                            isDirty = shader.IsCahced ? isDirty : true;
                             ExpandRegion(shaders, textWriter, shader.Lines, imported, ref isDirty);
                         }
                         else
@@ -575,11 +571,6 @@ namespace Shady
                         }
                     }
                 }
-                //}
-                //else
-                //{
-                //    File.Copy($"{shader.FileName}_mod", shader.FileName, true);
-                //}
             }
         }
 
