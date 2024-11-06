@@ -110,7 +110,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   ```
   \
   You can import functions, variables and `#define`s. `varying`s, `uniform`s and `main` function are not exported.\
-  Nested imports are also supported, so `A` imports `B` which imports `C`, with duplicates resolved.
+  Nested imports are also supported, so `A` imports `B` which imports `C`, with duplicate imports resolved.
 </details>
 
 #
@@ -178,7 +178,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   <summary><b>Example</b></summary>
   
   \
-  `sh_shader_base.fsh`
+  `sh_megashader.fsh`
   ```glsl
   varying vec2 v_vTexcoord;
   varying vec4 v_vColour;
@@ -208,20 +208,14 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   \
   `sh_shader_variant.fsh`
   ```glsl
-  #pragma shady: variant(sh_shader_base, BLUR, DARKEN) // will generate a variant of sh_shader_base with BLUR and DARKEN enabled
+  #pragma shady: variant(sh_shader_base, BLUR, DARKEN) // will generate a variant of sh_megashader with BLUR and DARKEN enabled
 
-  // the rest is ignored and will be replaced with base shader code
-  varying vec2 v_vTexcoord;
-  varying vec4 v_vColour;
-
-  void main() {
-      gl_FragColor = v_vColour * texture2D(gm_BaseTexture, v_vTexcoord);
-  }
+  // any code after is ignored and will be replaced with the source shader code with enabled keywords
   ```
   \
-  The variant directive with no keywords will create the exact copy of the original shader, which may be useful for generating code that share the same vertex shader, for example.
+  The variant directive with no keywords will create the exact copy of the original shader, which may be useful for generating code that shares the same vertex shader, for example.
   \
-  Original shader can also be used as normal.
+  The original shader can also be used as normal.
 </details>
 
 ## Troubleshooting
@@ -240,7 +234,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
 * **[Unity Shader Variants](https://docs.unity3d.com/Manual/shader-variants.html)**.
 
 ## TODO:
-* **Optimize caching to not rewrite unmodified shaders.**
+* **~Optimize caching to not rewrite unmodified shaders.~**
 * **Support more shader languages?**
 
 ## Author:
