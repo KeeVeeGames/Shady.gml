@@ -6,6 +6,7 @@ float random(vec2 st) {
 }
 
 #define GRAYSCALE_FACTOR vec3(0.2126, 0.7152, 0.0722)
+
 vec4 grayscale(vec4 color) {
     return vec4(vec3(dot(color.rgb, GRAYSCALE_FACTOR)), color.a);
 }

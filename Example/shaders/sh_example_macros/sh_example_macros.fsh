@@ -4,6 +4,13 @@ varying vec4 v_vColour;
 #pragma shady: import(sh_example_exports.GRAYSCALE_FACTOR)
 #pragma shady: import(sh_example_exports.grayscale)
 
+#pragma shady: macro_begin DEFINITIONS
+
+varying float v_Test;
+uniform float u_Test;
+
+#pragma shady: macro_end
+
 void main()
 {
     #pragma shady: macro_begin FRAGCOLOR

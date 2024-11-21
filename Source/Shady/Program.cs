@@ -144,6 +144,7 @@ namespace Shady
             int level = 0;
             bool isCommented = false;
             bool isLineIgnored = false;
+            bool isLinePragma = false;
             bool inMain = false;
             string regionNameFunction = string.Empty;
             LinkedList<string> regionNameMacros = new LinkedList<string>();
@@ -156,6 +157,7 @@ namespace Shady
                 string remainingLine;
 
                 isLineIgnored = false;
+                isLinePragma = false;
 
                 // Parse Shady tokens
                 Token? pragma = parser.Match(line, TokenType.Shady);
@@ -281,19 +283,19 @@ namespace Shady
                                     .ToArray();
 
                                 shader.VariantArguments[0] += shader.Extension;
-                                isLineIgnored = true;
+                                isLinePragma = true;
                                 shader.WillModify = true;
 
                                 break;
 
                             case TokenType.MacroBegin:
                                 regionNameMacros.AddLast(lineTokens[1].Value);
-                                isLineIgnored = true;
+                                isLinePragma = true;
                                 break;
 
                             case TokenType.MacroEnd:
                                 regionNameMacros.RemoveLast();
-                                isLineIgnored = true;
+                                isLinePragma = true;
                                 break;
                         }
                     }
@@ -443,9 +445,9 @@ namespace Shady
                     })();
                 }
 
-                if (!isCommented && !isLineIgnored)
+                if (!isCommented && !isLinePragma)
                 {
-                    if (!inMain)
+                    if (!inMain && !isLineIgnored)
                     {
                         shader.AddToRegion(Shader.FullRegion, shaderLine);
 
