@@ -1,1 +1,1 @@
-%~dp0\#shady\Shady %~dp0 --post
+"%~dp0\#shady\Shady" "%~dp0." --post

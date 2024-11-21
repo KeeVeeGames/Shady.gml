@@ -19,12 +19,12 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
   \
   `pre_build_step.bat`
   ```batch
-  %~dp0\#shady\Shady %~dp0 --pre
+  "%~dp0\#shady\Shady" "%~dp0." --pre
   ```
   \
   `post_textures.bat`
   ```batch
-  %~dp0\#shady\Shady %~dp0 --post
+  "%~dp0\#shady\Shady" "%~dp0." --post
   ```
 </details>
 
