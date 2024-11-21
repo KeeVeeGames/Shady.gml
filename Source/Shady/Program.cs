@@ -89,6 +89,19 @@ namespace Shady
                     Console.WriteLine("[Shady] Post-Texture Complete!");
 
                     break;
+
+                case "--clean":
+                    Console.WriteLine("[Shady] Bring back original shaders");
+
+                    Restore(shaderFiles);
+
+                    Console.WriteLine("[Shady] Clean shader cache");
+
+                    Clean(shaderFiles);
+
+                    Console.WriteLine("[Shady] Clean Complete!");
+
+                    break;
             }
         }
 
@@ -100,6 +113,18 @@ namespace Shady
                 if (File.Exists(backupFile))
                 {
                     File.Move(backupFile, shaderFile, true);
+                }
+            }
+        }
+
+        private static void Clean(string[] shaderFiles)
+        {
+            foreach (string shaderFile in shaderFiles)
+            {
+                string cacheFile = $"{shaderFile}_mod";
+                if (File.Exists(cacheFile))
+                {
+                    File.Delete(cacheFile);
                 }
             }
         }
