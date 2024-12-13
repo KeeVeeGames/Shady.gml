@@ -1,1 +1,0 @@
-"%~dp0\#shady\Shady" "%~dp0." --post
