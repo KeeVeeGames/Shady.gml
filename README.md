@@ -1,14 +1,31 @@
 # Shady.gml [![Donate](https://img.shields.io/badge/donate-%E2%9D%A4-blue.svg)](https://musnik.itch.io/donate-me) [![License](https://img.shields.io/github/license/KeeVeeGames/OKColor.gml)](#!)
 <img align="left" src="https://keevee.games/wp-content/uploads/2024/10/logo-300x300.png" alt="Logo" width="150">
 
-**Shady** is a GLSL preprocessor tool for GameMaker that allows you to include pieces of code from other shaders and generate shader variants for code reuse!
+**Shady** is a GLSL preprocessor tool for GameMaker that allows you to include pieces of code from other shaders and generate shader variants for code reuse! [**Support on Itch.io.**](https://musnik.itch.io/shady)
 
 The tool is integrated into the compilation process via compiler scripts so you can write reusable shaders inside standard GameMaker shader files with built-in or any other code editor.
 
 \
 It is still in Beta and tested to work with **GLSL ES** language but should also work with **GLSL**. **HLSL** is not (yet?) supported.
 
+> [!WARNING]
+> Always use source control or backups for your projects that use Shady, although very unlikely the software may corrupt the shader files and you can lost your work.
+
 ## Installation
+
+1. Download yymps extension file from the [release page](https://github.com/KeeVeeGames/Shady.gml/releases) and import it to your GameMaker project.
+2. Download the executable zip archive from the release page for your OS and architecture.
+3. Unzip and place the executable into the extension path (`YourProject/extensions/Shady`).
+4. You may also want to add these lines to `.gitignore` to remove temp Shady files from Git:
+
+```gitignore
+*.fsh_mod
+*.vsh_mod
+```
+
+<details>
+  <summary><b>Old alternative way</b></summary>
+  
 1. Download the latest executable from the [releases page](https://github.com/KeeVeeGames/Shady.gml/releases) for your OS and architecture.
 2. Create a directory inside your project location alongside other resource directories and name it, for example, `#shady`.
 3. Place the executable inside `#shady` directory.
@@ -36,14 +53,14 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
   ```console
   #!/bin/bash
   
-  ${0%/*}/#shady/Shady ${0%/*} --pre
+  "${0%/*}/#shady/Shady" "${0%/*}" --pre
   ```
   \
   `post_textures.sh`
   ```console
   #!/bin/bash
 
-  ${0%/*}/#shady/Shady ${0%/*} --post
+  "${0%/*}/#shady/Shady ${0%/*}" --post
   ```
 </details>
 
@@ -53,13 +70,14 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
 *.fsh_mod
 *.vsh_mod
 ```
+</details>
 
 ## How to use
 **Shady** is using a custom `#pragma` syntax with special directives. This isn't breaking the standard shader compiler as unknown custom pragmas are just ignored by it.
 
 You can write shady directives right in the GameMaker shader files, both vertex and fragment.
 
-Vertex and fragment shaders have separate databases so you can't import identifiers from vertex shader into fragment shader.
+Vertex and fragment shaders have separate databases so you can't import identifiers from vertex shader into the fragment shader.
 
 > [!NOTE]
 > Shader files that are only used as a library to import to other shaders are still required to have a `main` function (possibly blank) to not generate errors on compilation.\
@@ -109,7 +127,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   }
   ```
   \
-  You can import functions, variables and `#define`s. `varying`s, `uniform`s and `main` function are not exported.\
+  You can import functions, variables and `#define`s. However, `varying`s, `uniform`s and `main` function are not exported.\
   Nested imports are also supported, so `A` imports `B` which imports `C`, with duplicate imports resolved.
 </details>
 
@@ -163,7 +181,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   
   #pragma shady: macro_end
   ```
-  Will generate three macros `INVERSE_GRAYSCALE`, `INVERSE` and `GRAYSCALE` that will all work.
+  Will generate three macros: `INVERSE_GRAYSCALE`, `INVERSE` and `GRAYSCALE` that will all work.
 </details>
 
 #
@@ -187,7 +205,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   
   void main()
   {
-      // use #ifdef, #if defined() or #elif defined() to define variant keywords
+      // use #ifdef, #else, #if defined() or #elif defined() to define variant keywords
       #ifdef BLUR
           vec4 color = texture2DBlur(gm_BaseTexture, v_vTexcoord);
       #else
@@ -227,10 +245,27 @@ Vertex and fragment shaders have separate databases so you can't import identifi
     ![image](https://github.com/user-attachments/assets/8ca4f138-bc2a-478c-b23b-046b94e8eee4)
 
   </details>
+* **Changes in the shader aren't applying / shader lost its code**. Use a `--clean` option for the Shady executable to flush possibly corrupted cache files. Batch scripts can be found in extension folder or you can see the example here. You will need to manually run it to clean. There's a possibility to add the functionality in GameMaker to hook the script to a Clean command in IDE, see the [Feature Request](https://github.com/YoYoGames/GameMaker-Bugs/issues/8695) here.
+  <details>
+    <summary><b>Clean scripts</b></summary>
+    
+    \
+    `clean.bat`
+    ```batch
+    "%~dp0\#shady\Shady" "%~dp0." --clean
+    ```
+    \
+    `clean.sh`
+    ```console
+    #!/bin/bash
+  
+    "${0%/*}/#shady/Shady" "${0%/*}" --clean
+    ```
+  </details>
 
 ## Alternatives and inspirations:
 * **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)** – uses a custom syntax and is not integrated with the compilation process but supports HLSL.
-* **[glslfy](https://github.com/glslify/glslify)** – older brother for non-GameMaker users.
+* **[glslfy](https://github.com/glslify/glslify)** – elder brother for non-GameMaker users.
 * **[Unity Shader Variants](https://docs.unity3d.com/Manual/shader-variants.html)**.
 
 ## TODO:
