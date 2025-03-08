@@ -43,7 +43,7 @@ namespace Shady
                             shaders.Add(shaderName, shader);
                         }
 
-                        const bool forceNonParallel = false;
+                        const bool forceNonParallel = true;
                         var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : 4 };
 
                         Console.WriteLine("[Shady] Parse shaders");
@@ -170,6 +170,7 @@ namespace Shady
             bool isCommented = false;
             bool isLineIgnored = false;
             bool isLinePragma = false;
+            bool isLineComment = false;
             bool inMain = false;
             string regionNameFunction = string.Empty;
             LinkedList<string> regionNameMacros = new LinkedList<string>();
@@ -183,6 +184,7 @@ namespace Shady
 
                 isLineIgnored = false;
                 isLinePragma = false;
+                isLineComment = false;
 
                 // Parse Shady tokens
                 Token? pragma = parser.Match(line, TokenType.Shady);
@@ -342,6 +344,7 @@ namespace Shady
                             if (lineComment != null)
                             {
                                 isLineIgnored = true;
+                                isLineComment = true;
                                 Debug.WriteLine("!!!! Line Comment!");
                                 return;
                             }
@@ -488,23 +491,28 @@ namespace Shady
                     }
                 }
 
-                // Parse open brace
-                Token? openBrace = parser.Match(line, TokenType.OpenBrace);
-                if (openBrace != null)
+                if (!isLineComment)
                 {
-                    level++;
-                }
-
-                // Parse close brace
-                Token? closeBrace = parser.Match(line, TokenType.CloseBrace);
-                if (closeBrace != null)
-                {
-                    level--;
-
-                    if (level == 0)
+                    // Parse close brace
+                    Token? closeBrace = parser.Match(line, TokenType.CloseBrace);
+                    if (closeBrace != null)
                     {
-                        inMain = false;
-                        regionNameFunction = string.Empty;
+                        level--;
+                        Debug.WriteLine("!!!! Level Down!");
+
+                        if (level == 0)
+                        {
+                            inMain = false;
+                            regionNameFunction = string.Empty;
+                        }
+                    }
+
+                    // Parse open brace
+                    Token? openBrace = parser.Match(line, TokenType.OpenBrace);
+                    if (openBrace != null)
+                    {
+                        level++;
+                        Debug.WriteLine("!!!! Level Up!");
                     }
                 }
 
