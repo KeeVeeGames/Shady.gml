@@ -81,7 +81,7 @@ Vertex and fragment shaders have separate databases so you can't import identifi
 
 > [!NOTE]
 > Shader files that are only used as a library to import to other shaders are still required to have a `main` function (possibly blank) to not generate errors on compilation.\
-> Although, as those shaders are compiled and presented in the project it is possible to utilize them for something useful in the game.
+> Although, as those shaders are compiled and presented in the project so it is possible to utilize them for something useful in the game.
 
 #
 * ### `import` directive:
