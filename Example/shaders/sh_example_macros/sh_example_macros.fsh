@@ -6,6 +6,8 @@ varying vec4 v_vColour;
 
 #pragma shady: macro_begin DEFINITIONS
 
+#pragma shady: skip_compilation
+
 varying float v_Test;
 uniform float u_Test;
 

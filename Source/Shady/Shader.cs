@@ -10,6 +10,7 @@
         public string FileName { get; }
         public LinkedList<ShaderLine> Lines { get; }
         public string[]? VariantArguments;
+        public bool isSkipped { get; set; }
         public bool WillModify { get; set; }
         public bool IsCahced { get; set; }
 
@@ -21,6 +22,7 @@
             Extension = Path.GetExtension(fileName);
             FileName = fileName;
             Lines = new LinkedList<ShaderLine>();
+            isSkipped = false;
             WillModify = false;
             IsCahced = false;
 

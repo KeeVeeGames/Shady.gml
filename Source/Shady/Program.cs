@@ -202,7 +202,14 @@ namespace Shady
                     remainingLine = Regex.Replace(pragma.RemainingInput, @"^\s", ""); /// remove leading whitespaces
 
                     TokenType previousToken = TokenType.Shady;
-                    List<TokenType> expectedTokens = new List<TokenType>() { TokenType.Import, TokenType.Inline, TokenType.Variant, TokenType.MacroBegin, TokenType.MacroEnd };
+                    List<TokenType> expectedTokens = new List<TokenType>() {
+                        TokenType.Import,
+                        TokenType.Inline,
+                        TokenType.Variant,
+                        TokenType.MacroBegin,
+                        TokenType.MacroEnd,
+                        TokenType.SkipCompilation
+                    };
                     List<Token> lineTokens = new List<Token>();
 
                     while (expectedTokens.Count != 0)
@@ -258,6 +265,7 @@ namespace Shady
                                 case TokenType.CloseParen:
                                 case TokenType.Name:
                                 case TokenType.MacroEnd:
+                                case TokenType.SkipCompilation:
                                     expectedTokens.Add(TokenType.Empty);
                                     break;
 
@@ -341,6 +349,12 @@ namespace Shady
                             case TokenType.MacroEnd:
                                 regionNameMacros.RemoveLast();
                                 isLinePragma = true;
+                                break;
+
+                            case TokenType.SkipCompilation:
+                                shader.isSkipped = true;
+                                isLinePragma = true;
+                                shader.WillModify = true;
                                 break;
                         }
                     }
@@ -576,31 +590,40 @@ namespace Shady
                         DateTime date = File.GetLastWriteTime(shader.FileName);
                         textWriter.WriteLine($"// Date: {date.ToString("O")}");
 
-                        if (shader.VariantArguments == null)
+                        if (shader.isSkipped)
                         {
-                            ExpandRegion(shaders, textWriter, shader.Lines, imported, ref isDirty);
+                            textWriter.WriteLine($"// shader skipped by skip_compilation");
+                            textWriter.WriteLine("void main() {}");
                         }
                         else
                         {
-                            textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
 
-                            foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                            if (shader.VariantArguments == null)
                             {
-                                textWriter.WriteLine($"#define {variantArgument}");
-                            }
-
-                            textWriter.WriteLine();
-
-                            if (shaders.ContainsKey(shader.VariantArguments[0]))
-                            {
-                                Shader variantBaseShader = shaders[shader.VariantArguments[0]];
-
-                                isDirty = variantBaseShader.IsCahced ? isDirty : true;
-                                ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, ref isDirty);
+                                ExpandRegion(shaders, textWriter, shader.Lines, imported, ref isDirty);
                             }
                             else
                             {
-                                Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                textWriter.WriteLine($"// variant of {shader.VariantArguments[0]}");
+
+                                foreach (string variantArgument in shader.VariantArguments.Skip(1))
+                                {
+                                    textWriter.WriteLine($"#define {variantArgument}");
+                                }
+
+                                textWriter.WriteLine();
+
+                                if (shaders.ContainsKey(shader.VariantArguments[0]))
+                                {
+                                    Shader variantBaseShader = shaders[shader.VariantArguments[0]];
+
+                                    isDirty = variantBaseShader.IsCahced ? isDirty : true;
+                                    ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, ref isDirty);
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                }
                             }
                         }
 
