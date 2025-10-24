@@ -8,8 +8,11 @@ The tool is integrated into the compilation process via compiler scripts so you 
 \
 It is still in Beta and tested to work with **GLSL ES** language but should also work with **GLSL**. **HLSL** is not (yet?) supported.
 
+> [!NOTE]
+> The tool is **fully cross-platform**, meaning that the resulting shaders will work on any platform (**Desktop, Mobile, Consoles, Web**) if they are written correctly for that. The different executable builds that are distributed with this tool are intended for the platform that the **developer** is using. For example, if you're using GameMaker on M2 Mac use `mac-arm64` Shady build, if you're on Windows use `win-x64` build and so on. The compiled shaders will work anywhere!
+
 > [!WARNING]
-> Always use source control or backups for your projects that use Shady, although very unlikely the software may corrupt the shader files and you can lost your work.
+> Always use source control or backups for your projects that use Shady, although very unlikely, the software may corrupt the shader files and you can lost your work.
 
 ## Installation
 
@@ -23,65 +26,17 @@ It is still in Beta and tested to work with **GLSL ES** language but should also
 *.vsh_mod
 ```
 
-<details>
-  <summary><b>Old alternative way</b></summary>
-  
-1. Download the latest executable from the [releases page](https://github.com/KeeVeeGames/Shady.gml/releases) for your OS and architecture.
-2. Create a directory inside your project location alongside other resource directories and name it, for example, `#shady`.
-3. Place the executable inside `#shady` directory.
-4. Create or modify [compiler scripts](https://manual.gamemaker.io/monthly/en/Settings/Runner_Details/Compiler_Batch_Files.htm) in your project location to include the code:
-<details>
-  <summary><b>Windows Batch Files</b></summary>
-  
-  \
-  `pre_build_step.bat`
-  ```batch
-  "%~dp0\#shady\Shady" "%~dp0." --pre
-  ```
-  \
-  `post_textures.bat`
-  ```batch
-  "%~dp0\#shady\Shady" "%~dp0." --post
-  ```
-</details>
-
-<details>
-  <summary><b>Linux / MacOS Shell Scripts</b></summary>
-  
-  \
-  `pre_build_step.sh`
-  ```console
-  #!/bin/bash
-  
-  "${0%/*}/#shady/Shady" "${0%/*}" --pre
-  ```
-  \
-  `post_textures.sh`
-  ```console
-  #!/bin/bash
-
-  "${0%/*}/#shady/Shady ${0%/*}" --post
-  ```
-</details>
-
-5. You may also want to add these lines to `.gitignore` to remove temp Shady files from Git:
-
-```gitignore
-*.fsh_mod
-*.vsh_mod
-```
-</details>
-
 ## How to use
 **Shady** is using a custom `#pragma` syntax with special directives. This isn't breaking the standard shader compiler as unknown custom pragmas are just ignored by it.
 
 You can write shady directives right in the GameMaker shader files, both vertex and fragment.
 
-Vertex and fragment shaders have separate databases so you can't import identifiers from vertex shader into the fragment shader.
+By default, you're importing definitions from the same type of shader (fragment to fragment, vertex to vertex), but you can also explicitly specify the extension (`.fsh`/`.vsh`) of the shader you are importing from.
 
 > [!NOTE]
-> Shader files that are only used as a library to import to other shaders are still required to have a `main` function (possibly blank) to not generate errors on compilation.\
-> Although, as those shaders are compiled and presented in the project so it is possible to utilize them for something useful in the game.
+> Shader files that are only used as a library to import to other shaders still has to be correct, compilable and require to have a `main` function.
+> If you are not planning to use that "library" shader in-game as an effect, use `skip_compilation` directive that will replace all of the shader's code with a blank `main` function, but will still remain reachable for Shady directives.
+
 
 #
 * ### `import` directive:
@@ -236,6 +191,51 @@ Vertex and fragment shaders have separate databases so you can't import identifi
   The original shader can also be used as normal.
 </details>
 
+#
+
+* ### `skip_compilation` directive:
+**Syntax:**
+```glsl
+#pragma shady: skip_compilation
+```
+
+<details>
+  <summary><b>Example</b></summary>
+  
+  \
+  `sh_utility.fsh`
+  ```glsl
+  #pragma shady: skip_compilation
+
+  varying vec2 v_vTexcoord;
+  varying vec4 v_vColour;
+  
+  float random(vec2 st) {
+      return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
+  }
+
+  #define GRAYSCALE_FACTOR vec3(0.2126, 0.7152, 0.0722)
+  vec4 grayscale(vec4 color) {
+      return vec4(vec3(dot(color.rgb, GRAYSCALE_FACTOR)), color.a);
+  }
+
+  const vec2 textureScale = vec2(4096.0 / 1920.0, 4096.0 / 1080.0);
+  
+  void main()
+  {
+      gl_FragColor = v_vColour * texture2D(gm_BaseTexture, v_vTexcoord);
+  }
+  ```
+  This will create a "stub" shader without any code in it to compile by GameMaker's shader compiler, but you will still be able to import/inline/variant from it. Learn more in [#5](https://github.com/KeeVeeGames/Shady.gml/issues/5).
+  \
+  \
+  `sh_utility.fsh_mod`
+  ```glsl
+  // shader skipped by skip_compilation
+  void main() {}
+  ```
+</details>
+
 ## Troubleshooting
 * **Defender<sup>tm</sup> is too defensive**. Some anti-viruses may yield a false-positive warning on the binaries. There's nothing I can do for now besides waiting for binaries to get trusted over time or getting a paid code sign certificate, which is not cost-effective for the current state of the project. If you're not sure, you can compile the tool yourself from sources using Visual Studio and .NET 8.0.
 * **"Project Directory Modified"**. To not see that GameMaker message-box every time any shader is processed navigate to `Preferences` > `General Settings` and enable `Automatically reload changed files`.
@@ -245,23 +245,8 @@ Vertex and fragment shaders have separate databases so you can't import identifi
     ![image](https://github.com/user-attachments/assets/8ca4f138-bc2a-478c-b23b-046b94e8eee4)
 
   </details>
-* **Changes in the shader aren't applying / shader lost its code**. Use a `--clean` option for the Shady executable to flush possibly corrupted cache files. Batch scripts can be found in extension folder or you can see the example here. You will need to manually run it to clean. There's a possibility to add the functionality in GameMaker to hook the script to a Clean command in IDE, see the [Feature Request](https://github.com/YoYoGames/GameMaker-Bugs/issues/8695) here.
-  <details>
-    <summary><b>Clean scripts</b></summary>
-    
-    \
-    `clean.bat`
-    ```batch
-    "%~dp0\#shady\Shady" "%~dp0." --clean
-    ```
-    \
-    `clean.sh`
-    ```console
-    #!/bin/bash
-  
-    "${0%/*}/#shady/Shady" "${0%/*}" --clean
-    ```
-  </details>
+* **Changes in the shader aren't applying / shader has lost its code**. Use `Clean` option for the Shady executable to flush possibly corrupted cache files. It is hooked to the "Brush" button in GameMaker IDE so you can just press that. Alternatively, you can call shady executable with the `--clean` option.
+* **GameMaker's shader compilation errors are reporting the wrong line number**. As the preprocessor is "expanding" your added pragma directives and GameMaker's compiler is compiling already expanded sources, you will get error reports on the wrong lines that are from the modified expanded shader source. To view the modified shader to get the idea of what may have gone wrong, navigate to the "shaders" folder of the project, find the directory that has the name of the bugged shader and open the file with the `_mod` postfix inside the directory.
 
 ## Alternatives and inspirations:
 * **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)** – uses a custom syntax and is not integrated with the compilation process but supports HLSL.
