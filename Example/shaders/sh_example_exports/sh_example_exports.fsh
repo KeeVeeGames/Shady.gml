@@ -11,10 +11,6 @@ vec4 grayscale(vec4 color) {
     return vec4(vec3(dot(color.rgb, GRAYSCALE_FACTOR)), color.a);
 }
 
-vec2 flip(vec2 texcoord) {
-    return vec2(texcoord.x, 1.0 - texcoord.y);
-}
-
 void main()
 {
     vec4 color = texture2D(gm_BaseTexture, v_vTexcoord);

@@ -277,17 +277,26 @@ namespace Shady
                         switch (lineTokens[0].TokenType)
                         {
                             case TokenType.Import:
-                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shader.Extension;
+                                string shaderExtension = shader.Extension;
 
-                                if (lineTokens[3].TokenType == TokenType.Dot)
+                                if (lineTokens[3].TokenType == TokenType.Dot)   // partial import
                                 {
-                                    shaderLine.ImportRegion.RegionName = lineTokens[4].Value;
+                                    if (lineTokens[5].TokenType == TokenType.Dot)   // has shader extension
+                                    {
+                                        shaderExtension = "." + lineTokens[4].Value;
+                                        shaderLine.ImportRegion.RegionName = lineTokens[6].Value;
+                                    }
+                                    else
+                                    {
+                                        shaderLine.ImportRegion.RegionName = lineTokens[4].Value;
+                                    }
                                 }
                                 else
                                 {
                                     shaderLine.ImportRegion.RegionName = Shader.FullRegion;
                                 }
 
+                                shaderLine.ImportRegion.ShaderName = lineTokens[2].Value + shaderExtension;
                                 shader.WillModify = true;
 
                                 break;

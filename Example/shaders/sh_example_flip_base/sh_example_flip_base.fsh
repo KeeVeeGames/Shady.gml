@@ -2,7 +2,7 @@ varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
 #pragma shady: import(sh_example_exports.random)
-#pragma shady: import(sh_example_exports.flip)
+#pragma shady: import(sh_example_exports.vsh.flip)
 
 vec4 color_channel(vec4 color)
 {
