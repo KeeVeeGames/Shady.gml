@@ -101,7 +101,7 @@ namespace Shady
 
                     Console.WriteLine("[Shady] Clean shader cache");
 
-                    Clean(shaderFiles);
+                    Clean(shadersPath);
 
                     Console.WriteLine("[Shady] Clean Complete!");
 
@@ -121,11 +121,15 @@ namespace Shady
             }
         }
 
-        private static void Clean(string[] shaderFiles)
+        private static void Clean(string shadersPath)
         {
-            foreach (string shaderFile in shaderFiles)
+            string[] cacheFiles = Directory
+                .EnumerateFiles(shadersPath, "*.*", SearchOption.AllDirectories)
+                .Where(file => file.ToLower().EndsWith("fsh_mod") || file.ToLower().EndsWith("vsh_mod"))
+                .ToArray();
+
+            foreach (string cacheFile in cacheFiles)
             {
-                string cacheFile = $"{shaderFile}_mod";
                 if (File.Exists(cacheFile))
                 {
                     File.Delete(cacheFile);
