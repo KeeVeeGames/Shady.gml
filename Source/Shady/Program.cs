@@ -64,6 +64,10 @@ namespace Shady
 
                         Console.WriteLine("[Shady] Write modified shaders");
 
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"[Shady] DEBUG: In case of debugging shader compiler errors that were found on added lines, you can find modified shader sources in their respective folders inside `/shaders` directory with `_mod` postfix.");
+                        Console.ForegroundColor = ConsoleColor.White;
+
                         WriteShaders(shaders);
 
                         Console.WriteLine("[Shady] Pre-Build Complete!");
