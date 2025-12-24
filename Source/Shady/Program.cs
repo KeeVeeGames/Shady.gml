@@ -17,7 +17,7 @@ namespace Shady
         {
             if (args.Length != 2)
             {
-                Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady PrjectDir --pre\" and \"Shady ProjectDir --post\"");
+                Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady ProjectDir --pre\" and \"Shady ProjectDir --post\"");
                 return;
             }
 
@@ -155,7 +155,7 @@ namespace Shady
 
                     if (modDate.CompareTo(File.GetLastWriteTime(path)) == 0)
                     {
-                        shader.IsCahced = true;
+                        shader.IsCached = true;
                     }
                 }
             }
@@ -577,7 +577,7 @@ namespace Shady
             foreach (KeyValuePair<string, Shader> shaderKeyValue in shaders)
             {
                 Shader shader = shaderKeyValue.Value;
-                bool isDirty = !shader.IsCahced;
+                bool isDirty = !shader.IsCached;
 
                 if (shader.WillModify)
                 {
@@ -617,7 +617,7 @@ namespace Shady
                                 {
                                     Shader variantBaseShader = shaders[shader.VariantArguments[0]];
 
-                                    isDirty = variantBaseShader.IsCahced ? isDirty : true;
+                                    isDirty = variantBaseShader.IsCached ? isDirty : true;
                                     ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, ref isDirty);
                                 }
                                 else
@@ -637,7 +637,7 @@ namespace Shady
                 }
                 else
                 {
-                    if (!File.Exists($"{shader.FileName}_mod") || !shader.IsCahced)
+                    if (!File.Exists($"{shader.FileName}_mod") || !shader.IsCached)
                     {
                         using (TextWriter textWriter = new StreamWriter($"{shader.FileName}_mod", false, Encoding.UTF8, 65536))
                         {
@@ -682,7 +682,7 @@ namespace Shady
                         if (region != null)
                         {
                             imported.Add(shaderLine.ImportRegion);
-                            isDirty = shader.IsCahced ? isDirty : true;
+                            isDirty = shader.IsCached ? isDirty : true;
 
                             textWriter.WriteLine($"// begin import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
                             ExpandRegion(shaders, textWriter, region, imported, ref isDirty);

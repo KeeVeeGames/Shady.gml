@@ -12,7 +12,7 @@
         public string[]? VariantArguments;
         public bool isSkipped { get; set; }
         public bool WillModify { get; set; }
-        public bool IsCahced { get; set; }
+        public bool IsCached { get; set; }
 
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
@@ -24,7 +24,7 @@
             Lines = new LinkedList<ShaderLine>();
             isSkipped = false;
             WillModify = false;
-            IsCahced = false;
+            IsCached = false;
 
             _regions = new Dictionary<string, LinkedList<ShaderLine>>();
         }
