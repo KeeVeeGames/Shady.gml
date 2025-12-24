@@ -43,7 +43,7 @@ namespace Shady
                             shaders.Add(shaderName, shader);
                         }
 
-                        const bool forceNonParallel = true;
+                        const bool forceNonParallel = false;
                         var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : 4 };
 
                         Console.WriteLine("[Shady] Parse shaders");
