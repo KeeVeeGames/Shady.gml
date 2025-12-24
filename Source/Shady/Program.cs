@@ -65,7 +65,30 @@ namespace Shady
 
                             if (shader.WillModify)
                             {
-                                File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                                string path = shader.FileName;
+                                bool integrityCheck = true;
+
+                                if (File.Exists($"{path}_mod"))
+                                {
+                                    if (shader.Lines.Select(ls => ls.Line).SequenceEqual(File.ReadLines($"{path}_mod")))
+                                    {
+                                        integrityCheck = false;
+
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Console.WriteLine($"[Shady] Integrity check for {shader.Name} failed, it seems to be corrupted!");
+                                        Console.ForegroundColor = ConsoleColor.White;
+                                        Console.WriteLine($"        Try to find backup files in \"{Path.GetFullPath(path)}_bak\"");
+                                        if (!string.IsNullOrEmpty(cachePath))
+                                        {
+                                            Console.WriteLine($"        Or in \"{cachePath}\"");
+                                        }
+                                    }
+                                }
+
+                                if (integrityCheck)
+                                {
+                                    File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                                }
                             }
                         }
 
