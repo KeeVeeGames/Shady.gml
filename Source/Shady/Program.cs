@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
@@ -19,6 +17,15 @@ namespace Shady
             {
                 Console.WriteLine("[Shady] Wrong number of arguments when calling Shady. Try using \"Shady ProjectDir --pre\" and \"Shady ProjectDir --post\"");
                 return;
+            }
+
+            string cachePath = "";
+            string? cacheName = Environment.GetEnvironmentVariable("YYMACROS_project_cache_directory_name");
+            string? cacheDirectory = Environment.GetEnvironmentVariable("YYMACROS_ide_cache_directory");
+
+            if (cacheName != null && cacheDirectory != null)
+            {
+                cachePath = Path.GetFullPath(cacheName + "\\Shady", cacheDirectory);
             }
 
             string projectPath = args[0];
@@ -84,13 +91,13 @@ namespace Shady
                 case "--post":
                     Console.WriteLine("[Shady] Bring back original shaders");
 
-                    Restore(shaderFiles);
+                    Restore(shaderFiles, cachePath);
 
                     Console.WriteLine("[Shady] Post-Texture Complete!");
 
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"[Shady] DEBUG: In case of debugging shader compiler errors that were found on added lines,");
-                    Console.WriteLine($"you can find modified shader sources in their respective folders inside '/shaders' directory with '_mod' postfix.");
+                    Console.WriteLine($"        you can find modified shader sources in their respective folders inside '/shaders' directory with '_mod' postfix.");
                     Console.ForegroundColor = ConsoleColor.White;
 
                     break;
@@ -110,14 +117,57 @@ namespace Shady
             }
         }
 
-        private static void Restore(string[] shaderFiles)
+        private static void Restore(string[] shaderFiles, string cachePath = "")
         {
             foreach (string shaderFile in shaderFiles)
             {
                 string backupFile = $"{shaderFile}_bak";
+
                 if (File.Exists(backupFile))
                 {
-                    File.Move(backupFile, shaderFile, true);
+                    if (!string.IsNullOrEmpty(cachePath))
+                    {
+                        if (!Directory.Exists(cachePath))
+                        {
+                            Directory.CreateDirectory(cachePath);
+                        }
+
+                        string filename = Path.GetFileName(shaderFile);
+
+                        bool needBackup = true;
+                        var lastBackup = Directory.EnumerateFiles(cachePath, $"{filename}_*")
+                            .OrderByDescending(f => f)
+                            .FirstOrDefault();
+
+                        if (lastBackup != null)
+                        {
+                            FileInfo lastInfo = new FileInfo(lastBackup);
+                            FileInfo bakInfo = new FileInfo(backupFile);
+
+                            if (lastInfo.Length == bakInfo.Length && lastInfo.LastWriteTime == bakInfo.LastWriteTime)
+                            {
+                                needBackup = false;
+                            }
+                        }
+
+                        if (needBackup)
+                        {
+                            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                            string cacheFile = Path.GetFullPath($"{cachePath}\\{filename}_{timestamp}");
+
+                            File.Copy(backupFile, cacheFile, false);
+
+                            var backups = Directory.EnumerateFiles(cachePath, $"{filename}_*")
+                                .OrderByDescending(f => f)
+                                .Skip(5);
+
+                            foreach (var old in backups)
+                                File.Delete(old);
+                        }
+                    }
+
+                    File.Copy(backupFile, shaderFile, true);
+                    File.Delete(backupFile);
                 }
             }
         }
