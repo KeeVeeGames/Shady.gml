@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -55,7 +56,13 @@ namespace Shady
 
                         Console.WriteLine("[Shady] Parse shaders");
 
-                        Parallel.ForEach(shaders, options, ParseTokens);
+                        var shadersPartitioner = Partitioner.Create(shaders);
+
+                        Stopwatch sw = Stopwatch.StartNew();
+                        Parallel.ForEach(shadersPartitioner, options, ParseTokens);
+                        sw.Stop();
+
+                        Console.WriteLine($"[Shady] Parsing took {sw.ElapsedMilliseconds} ms");
 
                         Console.WriteLine("[Shady] Backup original shaders");
 
@@ -233,7 +240,7 @@ namespace Shady
                 {
                     string modDateString = modLineFirst.Replace("// Date: ", "");
                     DateTime modDate = DateTime.ParseExact(modDateString, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-
+                    
                     if (modDate.CompareTo(File.GetLastWriteTime(path)) == 0)
                     {
                         shader.IsCached = true;
