@@ -65,29 +65,37 @@ namespace Shady
 
                             if (shader.WillModify)
                             {
-                                string path = shader.FileName;
+                                string currentPath = shader.FileName;
+                                string bakPath = $"{Path.GetFullPath(currentPath)}_bak";
+                                string modPath = $"{currentPath}_mod";
                                 bool integrityCheck = true;
 
-                                if (File.Exists($"{path}_mod"))
+                                if (File.Exists(modPath))
                                 {
-                                    if (shader.Lines.Select(ls => ls.Line).SequenceEqual(File.ReadLines($"{path}_mod")))
-                                    {
-                                        integrityCheck = false;
+                                    FileInfo currentInfo = new FileInfo(currentPath);
+                                    FileInfo modInfo = new FileInfo(modPath);
 
-                                        Console.ForegroundColor = ConsoleColor.Red;
-                                        Console.WriteLine($"[Shady] Integrity check for {shader.Name} failed, it seems to be corrupted!");
-                                        Console.ForegroundColor = ConsoleColor.White;
-                                        Console.WriteLine($"        Try to find backup files in \"{Path.GetFullPath(path)}_bak\"");
-                                        if (!string.IsNullOrEmpty(cachePath))
+                                    if (currentInfo.Length == modInfo.Length)
+                                    {
+                                        if (shader.Lines.Select(ls => ls.Line).SequenceEqual(File.ReadLines(modPath)))
                                         {
-                                            Console.WriteLine($"        Or in \"{cachePath}\"");
+                                            integrityCheck = false;
+
+                                            Console.ForegroundColor = ConsoleColor.Red;
+                                            Console.WriteLine($"[Shady] Integrity check for {shader.Name} failed, it seems to be corrupted!");
+                                            Console.ForegroundColor = ConsoleColor.White;
+                                            Console.WriteLine($"        Try to find backup files in \"{bakPath}\"");
+                                            if (!string.IsNullOrEmpty(archivePath))
+                                            {
+                                                Console.WriteLine($"        Or in \"{archivePath}\"");
+                                            }
                                         }
                                     }
                                 }
 
                                 if (integrityCheck)
                                 {
-                                    File.Copy(shader.FileName, $"{shader.FileName}_bak", true);
+                                    File.Copy(currentPath, bakPath, true);
                                 }
                             }
                         }
