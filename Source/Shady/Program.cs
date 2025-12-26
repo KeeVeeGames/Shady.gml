@@ -19,13 +19,13 @@ namespace Shady
                 return;
             }
 
-            string cachePath = "";
-            string? cacheName = Environment.GetEnvironmentVariable("YYMACROS_project_cache_directory_name");
-            string? cacheDirectory = Environment.GetEnvironmentVariable("YYMACROS_ide_cache_directory");
+            string archivePath = "";
+            string? archiveName = Environment.GetEnvironmentVariable("YYMACROS_project_cache_directory_name");
+            string? archiveDirectory = Environment.GetEnvironmentVariable("YYMACROS_ide_cache_directory");
 
-            if (cacheName != null && cacheDirectory != null)
+            if (archiveName != null && archiveDirectory != null)
             {
-                cachePath = Path.GetFullPath(cacheName + "\\Shady", cacheDirectory);
+                archivePath = Path.GetFullPath(archiveName + "\\Shady", archiveDirectory);
             }
 
             string projectPath = args[0];
@@ -114,7 +114,7 @@ namespace Shady
                 case "--post":
                     Console.WriteLine("[Shady] Bring back original shaders");
 
-                    Restore(shaderFiles, cachePath);
+                    Restore(shaderFiles, archivePath);
 
                     Console.WriteLine("[Shady] Post-Texture Complete!");
 
@@ -140,7 +140,7 @@ namespace Shady
             }
         }
 
-        private static void Restore(string[] shaderFiles, string cachePath = "")
+        private static void Restore(string[] shaderFiles, string archivePath = "")
         {
             foreach (string shaderFile in shaderFiles)
             {
@@ -148,43 +148,43 @@ namespace Shady
 
                 if (File.Exists(backupFile))
                 {
-                    if (!string.IsNullOrEmpty(cachePath))
+                    if (!string.IsNullOrEmpty(archivePath))
                     {
-                        if (!Directory.Exists(cachePath))
+                        if (!Directory.Exists(archivePath))
                         {
-                            Directory.CreateDirectory(cachePath);
+                            Directory.CreateDirectory(archivePath);
                         }
 
                         string filename = Path.GetFileName(shaderFile);
 
-                        bool needBackup = true;
-                        var lastBackup = Directory.EnumerateFiles(cachePath, $"{filename}_*")
+                        bool needArchive = true;
+                        var lastArchive = Directory.EnumerateFiles(archivePath, $"{filename}_*")
                             .OrderByDescending(f => f)
                             .FirstOrDefault();
 
-                        if (lastBackup != null)
+                        if (lastArchive != null)
                         {
-                            FileInfo lastInfo = new FileInfo(lastBackup);
-                            FileInfo bakInfo = new FileInfo(backupFile);
+                            FileInfo lastInfo = new FileInfo(lastArchive);
+                            FileInfo backupInfo = new FileInfo(backupFile);
 
-                            if (lastInfo.Length == bakInfo.Length && lastInfo.LastWriteTime == bakInfo.LastWriteTime)
+                            if (lastInfo.Length == backupInfo.Length && lastInfo.LastWriteTime == backupInfo.LastWriteTime)
                             {
-                                needBackup = false;
+                                needArchive = false;
                             }
                         }
 
-                        if (needBackup)
+                        if (needArchive)
                         {
                             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                            string cacheFile = Path.GetFullPath($"{cachePath}\\{filename}_{timestamp}");
+                            string archiveFile = Path.GetFullPath($"{archivePath}\\{filename}_{timestamp}");
 
-                            File.Copy(backupFile, cacheFile, false);
+                            File.Copy(backupFile, archiveFile, false);
 
-                            var backups = Directory.EnumerateFiles(cachePath, $"{filename}_*")
+                            var archives = Directory.EnumerateFiles(archivePath, $"{filename}_*")
                                 .OrderByDescending(f => f)
                                 .Skip(5);
 
-                            foreach (var old in backups)
+                            foreach (var old in archives)
                                 File.Delete(old);
                         }
                     }
