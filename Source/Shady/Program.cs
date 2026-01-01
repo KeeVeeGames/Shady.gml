@@ -375,6 +375,7 @@ namespace Shady
                     }
 
                     //Console.Write($"{index} ");
+                    Debug.Write("---- ");
                     lineTokens.ForEach(token => Debug.Write($"[{token.Value}]"));
                     Debug.WriteLine("");
 
@@ -466,7 +467,7 @@ namespace Shady
                             {
                                 isLineIgnored = true;
                                 isLineComment = true;
-                                Debug.WriteLine("!!!! Line Comment!");
+                                Debug.WriteLine(">>>> Line Comment!");
                                 return;
                             }
 
@@ -474,12 +475,12 @@ namespace Shady
                             Token? openComment = parser.Match(line, TokenType.OpenComment);
                             if (openComment != null)
                             {
-                                Debug.WriteLine("!!!! Open Comment!");
+                                Debug.WriteLine(">>>> Open Comment!");
 
                                 Token? closeComment = parser.Match(line, TokenType.CloseComment);
                                 if (closeComment != null)
                                 {
-                                    Debug.WriteLine("!!!! Close Comment!");
+                                    Debug.WriteLine(">>>> Close Comment!");
                                 }
                                 else
                                 {
@@ -494,7 +495,7 @@ namespace Shady
                             if (varying != null)
                             {
                                 isLineIgnored = true;
-                                Debug.WriteLine("!!!! Varying!");
+                                Debug.WriteLine(">>>> Varying!");
                                 return;
                             }
 
@@ -503,7 +504,7 @@ namespace Shady
                             if (uniform != null)
                             {
                                 isLineIgnored = true;
-                                Debug.WriteLine("!!!! Uniform!");
+                                Debug.WriteLine(">>>> Uniform!");
                                 return;
                             }
 
@@ -512,7 +513,7 @@ namespace Shady
                             if (precision != null)
                             {
                                 isLineIgnored = true;
-                                Debug.WriteLine("!!!! Precision!");
+                                Debug.WriteLine(">>>> Precision!");
                                 return;
                             }
 
@@ -521,7 +522,7 @@ namespace Shady
                             if (main != null)
                             {
                                 inMain = true;
-                                Debug.WriteLine("!!!! Main!");
+                                Debug.WriteLine(">>>> Main!");
                                 return;
                             }
 
@@ -529,7 +530,7 @@ namespace Shady
                             Token? define = parser.Match(line, TokenType.Define);
                             if (define != null)
                             {
-                                Debug.WriteLine("!!!! Define!");
+                                Debug.WriteLine(">>>> Define!");
 
                                 remainingLine = define.RemainingInput.TrimStart();
 
@@ -550,7 +551,7 @@ namespace Shady
                             Token? assignment = parser.Match(line, TokenType.Assignment);
                             if (assignment != null)
                             {
-                                Debug.WriteLine("!!!! Assignment!");
+                                Debug.WriteLine(">>>> Assignment!");
 
                                 remainingLine = assignment.Value;
 
@@ -568,7 +569,7 @@ namespace Shady
                             Token? function = parser.Match(line, TokenType.Function);
                             if (function != null)
                             {
-                                Debug.WriteLine("!!!! Function!");
+                                Debug.WriteLine(">>>> Function!");
 
                                 remainingLine = function.Value;
 
@@ -587,7 +588,7 @@ namespace Shady
                             Token? closeComment = parser.Match(line, TokenType.CloseComment);
                             if (closeComment != null)
                             {
-                                Debug.WriteLine("!!!! Close Comment!");
+                                Debug.WriteLine(">>>> Close Comment!");
                                 isCommented = false;
                             }
                         }
@@ -619,7 +620,7 @@ namespace Shady
                     if (closeBrace != null)
                     {
                         level--;
-                        Debug.WriteLine("!!!! Level Down!");
+                        Debug.WriteLine(">>>> Level Down!");
 
                         if (level == 0)
                         {
@@ -633,7 +634,7 @@ namespace Shady
                     if (openBrace != null)
                     {
                         level++;
-                        Debug.WriteLine("!!!! Level Up!");
+                        Debug.WriteLine(">>>> Level Up!");
                     }
                 }
 
