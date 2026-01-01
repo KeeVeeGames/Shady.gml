@@ -11,6 +11,7 @@ namespace Shady
     {
         static Parser parser = new Parser();
         static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
+        static int lineOffset = 33;
 
         static void Main(string[] args)
         {
@@ -688,7 +689,7 @@ namespace Shady
 
                             if (shader.VariantArguments == null)
                             {
-                                ExpandRegion(shaders, textWriter, shader.Lines, imported, ref isDirty);
+                                ExpandRegion(shaders, textWriter, shader.Lines, imported, lineOffset, true, ref isDirty);
                             }
                             else
                             {
@@ -706,7 +707,7 @@ namespace Shady
                                     Shader variantBaseShader = shaders[shader.VariantArguments[0]];
 
                                     isDirty = variantBaseShader.IsCached ? isDirty : true;
-                                    ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, ref isDirty);
+                                    ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, lineOffset, true, ref isDirty);
                                 }
                                 else
                                 {
@@ -738,12 +739,29 @@ namespace Shady
             }
         }
 
-        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported, ref bool isDirty)
+        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported, int lineNumber, bool toIncrementLine, ref bool isDirty)
         {
+            bool toWriteLine = true;
+
             foreach (ShaderLine shaderLine in shaderLines)
             {
                 if (shaderLine.ImportRegion == default)
                 {
+                    if (toWriteLine)
+                    {
+                        textWriter.WriteLine($"#line {lineNumber}");
+                        
+                    } else
+                    {
+                        //textWriter.WriteLine($"// #line {lineNumber}");
+                    }
+
+                    if (toIncrementLine)
+                    {
+                        lineNumber++;
+                        toWriteLine = false;
+                    }
+                    
                     textWriter.WriteLine(shaderLine.Line);
                 }
                 else
@@ -773,8 +791,11 @@ namespace Shady
                             isDirty = shader.IsCached ? isDirty : true;
 
                             textWriter.WriteLine($"// begin import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
-                            ExpandRegion(shaders, textWriter, region, imported, ref isDirty);
+                            ExpandRegion(shaders, textWriter, region, imported, lineNumber, false, ref isDirty);
                             textWriter.WriteLine($"// end import {shaderLine.ImportRegion.ShaderName}.{shaderLine.ImportRegion.RegionName}");
+
+                            if (toIncrementLine) lineNumber++;
+                            toWriteLine = true;
                         }
                         else
                         {
