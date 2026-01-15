@@ -5,6 +5,8 @@ attribute vec2 in_TextureCoord;              // (u,v)
 varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
+#pragma shady: import(sh_example_exports.flip)
+
 void main() {
     gl_Position = gm_Matrices[MATRIX_WORLD_VIEW_PROJECTION] * vec4(in_Position.xyz, 1.0);
     
