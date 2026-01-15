@@ -267,8 +267,8 @@ namespace Shady
             Shader shader = shaderKeyValue.Value;
             int level = 0;
             bool isCommented = false;
-            bool isLineIgnored = false;
-            bool isLinePragma = false;
+            bool isLineDefinitionIgnored = false;
+            bool isLineUneededPragma = false;
             bool isLineComment = false;
             bool inMain = false;
             string regionNameFunction = string.Empty;
@@ -281,8 +281,8 @@ namespace Shady
                 string line = Regex.Replace(shaderLine.Line, @"^\s+", "");  /// remove leading whitespaces
                 string remainingLine;
 
-                isLineIgnored = false;
-                isLinePragma = false;
+                isLineDefinitionIgnored = false;
+                isLineUneededPragma = false;
                 isLineComment = false;
 
                 // Parse Shady tokens
@@ -427,24 +427,24 @@ namespace Shady
                                     .ToArray();
 
                                 shader.VariantArguments[0] += shader.Extension;
-                                isLinePragma = true;
+                                isLineUneededPragma = true;
                                 shader.WillModify = true;
 
                                 break;
 
                             case TokenType.MacroBegin:
                                 regionNameMacros.AddLast(lineTokens[1].Value);
-                                isLinePragma = true;
+                                isLineUneededPragma = true;
                                 break;
 
                             case TokenType.MacroEnd:
                                 regionNameMacros.RemoveLast();
-                                isLinePragma = true;
+                                isLineUneededPragma = true;
                                 break;
 
                             case TokenType.SkipCompilation:
                                 shader.IsSkipped = true;
-                                isLinePragma = true;
+                                isLineUneededPragma = true;
                                 shader.WillModify = true;
                                 break;
                         }
@@ -458,7 +458,7 @@ namespace Shady
                         {
                             if (string.IsNullOrEmpty(line))
                             {
-                                isLineIgnored = true;
+                                isLineComment = true;
                                 return;
                             }
 
@@ -466,7 +466,6 @@ namespace Shady
                             Token? lineComment = parser.Match(line, TokenType.LineComment);
                             if (lineComment != null)
                             {
-                                isLineIgnored = true;
                                 isLineComment = true;
                                 Debug.WriteLine(">>>> Line Comment!");
                                 return;
@@ -482,6 +481,7 @@ namespace Shady
                                 if (closeComment != null)
                                 {
                                     Debug.WriteLine(">>>> Close Comment!");
+                                    isLineComment = true;
                                 }
                                 else
                                 {
@@ -495,7 +495,7 @@ namespace Shady
                             Token? varying = parser.Match(line, TokenType.Varying);
                             if (varying != null)
                             {
-                                isLineIgnored = true;
+                                isLineDefinitionIgnored = true;
                                 Debug.WriteLine(">>>> Varying!");
                                 return;
                             }
@@ -504,7 +504,7 @@ namespace Shady
                             Token? uniform = parser.Match(line, TokenType.Uniform);
                             if (uniform != null)
                             {
-                                isLineIgnored = true;
+                                isLineDefinitionIgnored = true;
                                 Debug.WriteLine(">>>> Uniform!");
                                 return;
                             }
@@ -513,7 +513,7 @@ namespace Shady
                             Token? precision = parser.Match(line, TokenType.Precision);
                             if (precision != null)
                             {
-                                isLineIgnored = true;
+                                isLineDefinitionIgnored = true;
                                 Debug.WriteLine(">>>> Precision!");
                                 return;
                             }
@@ -591,14 +591,16 @@ namespace Shady
                             {
                                 Debug.WriteLine(">>>> Close Comment!");
                                 isCommented = false;
+                                isLineComment = true;
                             }
                         }
                     })();
                 }
 
-                if (!isCommented && !isLinePragma)
+
+                if (!isLineComment && !isCommented && !isLineUneededPragma)
                 {
-                    if (!inMain && !isLineIgnored)
+                    if (!inMain && !isLineDefinitionIgnored)
                     {
                         shader.AddToRegion(Shader.FullRegion, shaderLine);
 
@@ -612,10 +614,7 @@ namespace Shady
                     {
                         shader.AddToRegion($"{Shader.MacroRegion}_{regionNameMacro}", shaderLine);
                     }
-                }
 
-                if (!isLineComment)
-                {
                     // Parse close brace
                     Token? closeBrace = parser.Match(line, TokenType.CloseBrace);
                     if (closeBrace != null)

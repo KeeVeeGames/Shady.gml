@@ -1,15 +1,23 @@
 varying vec2 v_vTexcoord;
 varying vec4 v_vColour;
 
+#pragma shady: skip_compilation
+
 #pragma shady: import(sh_example_exports.GRAYSCALE_FACTOR)
 #pragma shady: import(sh_example_exports.grayscale)
 
 #pragma shady: macro_begin DEFINITIONS
 
-#pragma shady: skip_compilation
-
 varying float v_Test;
 uniform float u_Test;
+
+/*
+multi-line
+comment
+test
+*/
+
+// comment test
 
 #pragma shady: macro_end
 
