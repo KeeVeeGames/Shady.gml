@@ -33,7 +33,7 @@ namespace Shady
             else
             {
                 archiveDirectory = Environment.GetEnvironmentVariable("YYtempFolder");
-                archivePath = (archiveDirectory ?? "") + "\\Shady";
+                archivePath = Path.GetFullPath((archiveDirectory ?? "") + "\\Shady");
             }
 
             string projectPath = args[0];
@@ -121,7 +121,7 @@ namespace Shady
 
                         if (toPrintArchivePath && !string.IsNullOrEmpty(archivePath))
                         {
-                            Console.WriteLine($"[Shady] print_path\n    Backup Archive: {archivePath}");
+                            Console.WriteLine($"[Shady] print_path\n    Backup Archive: \"{archivePath}\"");
                         }
 
                         Console.WriteLine("[Shady] Pre-Build Complete!");
