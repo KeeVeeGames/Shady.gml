@@ -10,9 +10,23 @@
         public string FileName { get; }
         public LinkedList<ShaderLine> Lines { get; }
         public string[]? VariantArguments;
-        public bool isSkipped { get; set; }
+        public bool IsSkipped { get; set; }
         public bool WillModify { get; set; }
         public bool IsCached { get; set; }
+        public int LineOffset
+        {
+            get
+            {
+                if (Extension == ".vsh")
+                {
+                    return 122;
+                }
+                else
+                {
+                    return 33;
+                }
+            }
+        }
 
         private readonly Dictionary<string, LinkedList<ShaderLine>> _regions;
 
@@ -22,7 +36,7 @@
             Extension = Path.GetExtension(fileName);
             FileName = fileName;
             Lines = new LinkedList<ShaderLine>();
-            isSkipped = false;
+            IsSkipped = false;
             WillModify = false;
             IsCached = false;
 
@@ -42,7 +56,8 @@
             {
                 region = new LinkedList<ShaderLine>();
                 _regions.Add(regionName, region);
-            } else
+            }
+            else
             {
                 region = _regions[regionName];
             }

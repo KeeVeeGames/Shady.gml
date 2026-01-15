@@ -11,7 +11,6 @@ namespace Shady
     {
         static Parser parser = new Parser();
         static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
-        static int lineOffset = 33;
 
         static void Main(string[] args)
         {
@@ -442,7 +441,7 @@ namespace Shady
                                 break;
 
                             case TokenType.SkipCompilation:
-                                shader.isSkipped = true;
+                                shader.IsSkipped = true;
                                 isLinePragma = true;
                                 shader.WillModify = true;
                                 break;
@@ -668,7 +667,7 @@ namespace Shady
             {
                 Shader shader = shaderKeyValue.Value;
                 bool isDirty = !shader.IsCached;
-
+                
                 if (shader.WillModify)
                 {
                     HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
@@ -680,7 +679,7 @@ namespace Shady
                         DateTime date = File.GetLastWriteTime(shader.FileName);
                         textWriter.WriteLine($"// Date: {date.ToString("O")}");
 
-                        if (shader.isSkipped)
+                        if (shader.IsSkipped)
                         {
                             textWriter.WriteLine($"// shader skipped by skip_compilation");
                             textWriter.WriteLine("void main() {}");
@@ -690,7 +689,7 @@ namespace Shady
 
                             if (shader.VariantArguments == null)
                             {
-                                ExpandRegion(shaders, textWriter, shader.Lines, imported, lineOffset, true, ref isDirty);
+                                ExpandRegion(shaders, textWriter, shader.Lines, imported, shader.LineOffset, true, ref isDirty);
                             }
                             else
                             {
@@ -708,7 +707,7 @@ namespace Shady
                                     Shader variantBaseShader = shaders[shader.VariantArguments[0]];
 
                                     isDirty = variantBaseShader.IsCached ? isDirty : true;
-                                    ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, lineOffset, true, ref isDirty);
+                                    ExpandRegion(shaders, textWriter, variantBaseShader.Lines, imported, shader.LineOffset, true, ref isDirty);
                                 }
                                 else
                                 {
