@@ -12,6 +12,7 @@ namespace Shady
     {
         static Parser parser = new Parser();
         static Dictionary<string, Shader> shaders = new Dictionary<string, Shader>();
+        static bool toPrintArchivePath = false;
 
         static void Main(string[] args)
         {
@@ -28,6 +29,11 @@ namespace Shady
             if (archiveName != null && archiveDirectory != null)
             {
                 archivePath = Path.GetFullPath(archiveName + "\\Shady", archiveDirectory);
+            }
+            else
+            {
+                archiveDirectory = Environment.GetEnvironmentVariable("YYtempFolder");
+                archivePath = (archiveDirectory ?? "") + "\\Shady";
             }
 
             string projectPath = args[0];
@@ -112,6 +118,11 @@ namespace Shady
                         Console.WriteLine("[Shady] Write modified shaders");
 
                         WriteShaders(shaders);
+
+                        if (toPrintArchivePath && !string.IsNullOrEmpty(archivePath))
+                        {
+                            Console.WriteLine($"[Shady] print_path\n    Backup Archive: {archivePath}");
+                        }
 
                         Console.WriteLine("[Shady] Pre-Build Complete!");
                     }
@@ -298,7 +309,8 @@ namespace Shady
                         TokenType.Variant,
                         TokenType.MacroBegin,
                         TokenType.MacroEnd,
-                        TokenType.SkipCompilation
+                        TokenType.SkipCompilation,
+                        TokenType.PrintPath
                     };
                     List<Token> lineTokens = new List<Token>();
 
@@ -444,8 +456,14 @@ namespace Shady
 
                             case TokenType.SkipCompilation:
                                 shader.IsSkipped = true;
-                                isLineUneededPragma = true;
                                 shader.WillModify = true;
+                                isLineUneededPragma = true;
+                                break;
+
+                            case TokenType.PrintPath:
+                                shader.ToPrintPath = true;
+                                toPrintArchivePath = true;
+                                isLineUneededPragma = true;
                                 break;
                         }
                     }
@@ -740,6 +758,14 @@ namespace Shady
                             textWriter.WriteLine($"// Date: {date.ToString("O")}");
                         }
                     }
+                }
+
+                if (shader.ToPrintPath)
+                {
+                    string currentPath = Path.GetFullPath(shader.FileName);
+                    Console.WriteLine($"[Shady] print_path {shader.Name}:\n" +
+                        $"    Original shader: \"{currentPath}\"\n" +
+                        $"    Modified shader: \"{currentPath}_mod\"");
                 }
             }
         }

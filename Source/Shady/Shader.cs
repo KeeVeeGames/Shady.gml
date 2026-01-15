@@ -13,6 +13,7 @@
         public bool IsSkipped { get; set; }
         public bool WillModify { get; set; }
         public bool IsCached { get; set; }
+        public bool ToPrintPath { get; set; }
         public int LineOffset
         {
             get

@@ -11,6 +11,7 @@ namespace Shady
         MacroEnd,
         Variant,
         SkipCompilation,
+        PrintPath,
         OpenParen,
         CloseParen,
         Identifier,
@@ -48,6 +49,7 @@ namespace Shady
             tokensRegexes[(int)TokenType.MacroEnd] = new TokenRegex(TokenType.MacroEnd, "^macro_end", "'macro_end'");
             tokensRegexes[(int)TokenType.Variant] = new TokenRegex(TokenType.Variant, "^variant", "'variant'");
             tokensRegexes[(int)TokenType.SkipCompilation] = new TokenRegex(TokenType.SkipCompilation, "^skip_compilation", "'skip_compilation'");
+            tokensRegexes[(int)TokenType.PrintPath] = new TokenRegex(TokenType.PrintPath, "^print_path", "'print_path'");
             tokensRegexes[(int)TokenType.OpenParen] = new TokenRegex(TokenType.OpenParen, @"^\(", "open paren '('");
             tokensRegexes[(int)TokenType.CloseParen] = new TokenRegex(TokenType.CloseParen, @"^\)", "close paren ')'");
             tokensRegexes[(int)TokenType.Identifier] = new TokenRegex(TokenType.Identifier, @"^\w+", "shader/function/variable/macro identifier");
@@ -110,7 +112,9 @@ namespace Shady
                 expectedExpressions
             } is expected after {
                 tokensRegexes[(int)previousToken].Description
-            }.");
+            }, got '{
+                input
+            }' instead.");
         }
 
         private class TokenRegex
