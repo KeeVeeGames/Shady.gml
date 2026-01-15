@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shady.Parser;
@@ -54,6 +55,7 @@ namespace Shady
                         const bool forceNonParallel = false;
                         var options = new ParallelOptions { MaxDegreeOfParallelism = forceNonParallel ? 1 : 4 };
 
+                        Console.WriteLine($"[Shady] Version: {Assembly.GetExecutingAssembly().GetName().Version}");
                         Console.WriteLine("[Shady] Parse shaders");
 
                         var shadersPartitioner = Partitioner.Create(shaders);
