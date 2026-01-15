@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using static Shady.Parser;
 
 namespace Shady
-{ 
+{
     internal class Program
     {
         static Parser parser = new Parser();
@@ -242,7 +242,7 @@ namespace Shady
                 {
                     string modDateString = modLineFirst.Replace("// Date: ", "");
                     DateTime modDate = DateTime.ParseExact(modDateString, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
-                    
+
                     if (modDate.CompareTo(File.GetLastWriteTime(path)) == 0)
                     {
                         shader.IsCached = true;
@@ -669,7 +669,7 @@ namespace Shady
             {
                 Shader shader = shaderKeyValue.Value;
                 bool isDirty = !shader.IsCached;
-                
+
                 if (shader.WillModify)
                 {
                     HashSet<(string ShaderName, string RegionName)> imported = new HashSet<(string ShaderName, string RegionName)>();
@@ -713,7 +713,11 @@ namespace Shady
                                 }
                                 else
                                 {
-                                    Console.WriteLine($"[Shady] Variant Error in {shader.Name}: Cannot create a variant of '{shader.VariantArguments[0]}', shader doesn't exist!");
+                                    Console.WriteLine($"[Shady] Variant Error in {
+                                        shader.Name
+                                    }: Cannot create a variant of '{
+                                        shader.VariantArguments[0]
+                                    }', shader doesn't exist!");
                                 }
                             }
                         }
@@ -741,7 +745,14 @@ namespace Shady
             }
         }
 
-        private static void ExpandRegion(Dictionary<string, Shader> shaders, TextWriter textWriter, LinkedList<ShaderLine> shaderLines, HashSet<(string ShaderName, string RegionName)> imported, int lineNumber, bool toIncrementLine, ref bool isDirty)
+        private static void ExpandRegion(
+            Dictionary<string, Shader> shaders,
+            TextWriter textWriter,
+            LinkedList<ShaderLine> shaderLines,
+            HashSet<(string ShaderName, string RegionName)> imported,
+            int lineNumber,
+            bool toIncrementLine,
+            ref bool isDirty)
         {
             bool toWriteLine = true;
 
@@ -752,8 +763,9 @@ namespace Shady
                     if (toWriteLine)
                     {
                         textWriter.WriteLine($"#line {lineNumber}");
-                        
-                    } else
+
+                    }
+                    else
                     {
                         //textWriter.WriteLine($"// #line {lineNumber}");
                     }
@@ -763,7 +775,7 @@ namespace Shady
                         lineNumber++;
                         toWriteLine = false;
                     }
-                    
+
                     textWriter.WriteLine(shaderLine.Line);
                 }
                 else
@@ -801,13 +813,27 @@ namespace Shady
                         }
                         else
                         {
-                            Console.WriteLine($"[Shady] Import Error in {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.RegionName}' from '{shaderLine.ImportRegion.ShaderName}', identifier doesn't exist!");
+                            Console.WriteLine($"[Shady] Import Error in {
+                                shaderLine.ShaderName
+                            }, line {
+                                shaderLine.LineIndex + 1
+                            }: Cannot import '{
+                                shaderLine.ImportRegion.RegionName
+                            }' from '{
+                                shaderLine.ImportRegion.ShaderName
+                            }', identifier doesn't exist!");
                         }
 
                     }
                     else
                     {
-                        Console.WriteLine($"[Shady] Import Error in {shaderLine.ShaderName}, line {shaderLine.LineIndex + 1}: Cannot import '{shaderLine.ImportRegion.ShaderName}', shader doesn't exist or has no exported identifiers!");
+                        Console.WriteLine($"[Shady] Import Error in {
+                            shaderLine.ShaderName
+                        }, line {
+                            shaderLine.LineIndex + 1
+                        }: Cannot import '{
+                            shaderLine.ImportRegion.ShaderName
+                        }', shader doesn't exist or has no exported identifiers!");
                     }
                 }
             }

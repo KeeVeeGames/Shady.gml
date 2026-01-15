@@ -86,7 +86,11 @@ namespace Shady
                 return token;
             }
 
-            throw new UnexpectedExpression($"Undexpected expression found! The {tokensRegexes[(int)expectedToken].Description} is expected after {tokensRegexes[(int)previousToken].Description}.");
+            throw new UnexpectedExpression($"Undexpected expression found! The {
+                tokensRegexes[(int)expectedToken].Description
+            } is expected after {
+                tokensRegexes[(int)previousToken].Description
+            }.");
         }
 
         public Token Expect(string input, List<TokenType> expectedTokens, TokenType previousToken)
@@ -94,14 +98,19 @@ namespace Shady
             foreach (TokenType tokenType in expectedTokens)
             {
                 Token? token = tokensRegexes[(int)tokenType].Match(input);
-                if (token != null) {
+                if (token != null)
+                {
                     return token;
                 }
             }
 
             string expectedExpressions = string.Join(" or ", expectedTokens.Select(t => $"{tokensRegexes[(int)t].Description}"));
 
-            throw new UnexpectedExpression($"Undexpected expression found! The {expectedExpressions} is expected after {tokensRegexes[(int)previousToken].Description}.");
+            throw new UnexpectedExpression($"Undexpected expression found! The {
+                expectedExpressions
+            } is expected after {
+                tokensRegexes[(int)previousToken].Description
+            }.");
         }
 
         private class TokenRegex
@@ -152,7 +161,7 @@ namespace Shady
             public string ExpectedExpression { get; private set; }
             public UnexpectedExpression(string message) : base(message)
             {
-              
+
             }
         }
     }
