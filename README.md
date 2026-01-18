@@ -123,7 +123,7 @@ By default, you're importing definitions from the same type of shader (fragment 
   }
   ```
   \
-  `inline` just copies the plain text from other shader with no restrictions. `import`s and other `inline`s inside the macro inlined will also get expanded and resolved.\
+  `inline` just copies the plain text from other shader with no restrictions. `import`s and other `inline`s inside the macro currently inlined will also get expanded and resolved.\
   Nested macros are also supported, so this code:
   ```glsl
   #pragma shady: macro_begin INVERSE_GRAYSCALE
@@ -240,7 +240,7 @@ By default, you're importing definitions from the same type of shader (fragment 
 
 ## Additional features
 * **Correct line numbers in shader error messages**. As a result of fixing an issue with expanded shaders producing unintuitive line numbers in GameMaker error messages, those line numbers turned out even more correct than GameMaker's ones. By default, for some reason, GameMakers padds by ±1 line off of the actual line in error messages, with Shady-preprocessed shaders the lines are now fully correct.
-* **GMEdit support**. Parallel to the development of this tool, some pull requests to [GMEdit](https://github.com/YellowAfterlife/GMEdit) was made by me wich made its shader editor much more usable. Additionally, you can now load custom shader APIs into GMEdit, so there's a **Shady** API available with current releases that adds auto-completion for its directives.
+* **GMEdit support**. Parallel to the development of this tool, some pull requests to [GMEdit](https://github.com/YellowAfterlife/GMEdit) were made by me which made its shader editor much more usable. Additionally, you can now load custom shader APIs into GMEdit, so there's a **Shady** API available with current releases that adds auto-completion for its directives.
   <details>
     <summary><b>Preview</b></summary>
 
