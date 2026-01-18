@@ -3,7 +3,7 @@
 
 **Shady** is a GLSL preprocessor tool for GameMaker that allows you to include pieces of code from other shaders and generate shader variants for code reuse!
 
-The tool is integrated into the game compilation process via compiler scripts, so you can write reusable shaders inside standard GameMaker shader files with a built-in or any other code editor. With no additional processing needed outside of pressing `Run`/`Build` in IDE.
+The tool is integrated into the game compilation process via compiler scripts, so you can write reusable shaders inside standard GameMaker shader files with a built-in or any other code editor. With no outside processing needed.
 
 [**Support on Itch.io.**](https://musnik.itch.io/shady)
 
