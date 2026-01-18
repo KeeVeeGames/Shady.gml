@@ -3,14 +3,14 @@
 
 **Shady** is a GLSL preprocessor tool for GameMaker that allows you to include pieces of code from other shaders and generate shader variants for code reuse!
 
-The tool is integrated into the compilation process via compiler scripts so you can write reusable shaders inside standard GameMaker shader files with built-in or any other code editor.
+The tool is integrated into the game compilation process via compiler scripts, so you can write reusable shaders inside standard GameMaker shader files with a built-in or any other code editor. With no additional processing needed outside of pressing `Run`/`Build` in IDE.
 
 [**Support on Itch.io.**](https://musnik.itch.io/shady)
 
-It is still in Beta and tested to work with **GLSL ES** language but should also work with **GLSL**. **HLSL** is not (yet?) supported.
+The preprocessor supports **GLSL ES** (GM's default) and **GLSL** languages. **HLSL** is not (yet?) supported.
 
 > [!NOTE]
-> The tool is **fully cross-platform**, meaning that the resulting shaders will work on any platform (**Desktop, Mobile, Consoles, Web**) if they are written correctly for that. The different executable builds that are distributed with this tool are intended for the platform that the **developer** is using. For example, if you're using GameMaker on M2 Mac use `mac-arm64` Shady build, if you're on Windows use `win-x64` build and so on. The compiled shaders will work anywhere!
+> The tool is **fully cross-platform**, meaning that the resulting shaders will work on any platform (**Desktop, Mobile, Consoles, Web**). The different executable builds that are distributed with this tool are intended for the platform that the **developer** is using. For example, if you're using GameMaker on M2 Mac use `mac-arm64` Shady build, if you're on Windows use `win-x64` build and so on. The compiled shaders will work anywhere!
 
 > [!WARNING]
 > Always use source control or backups for your projects that use Shady, although very unlikely, the software may corrupt the shader files and you can lost your work.
@@ -36,7 +36,7 @@ By default, you're importing definitions from the same type of shader (fragment 
 
 > [!NOTE]
 > Shader files that are only used as a library to import to other shaders still has to be correct, compilable and require to have a `main` function.
-> If you are not planning to use that "library" shader in-game as an effect, use `skip_compilation` directive that will replace all of the shader's code with a blank `main` function, but will still remain reachable for Shady directives.
+> If you are not planning to use that "library" shader in-game as an effect, you can use `skip_compilation` directive that will replace all of the shader's code with a blank `main` function, but will still remain reachable for Shady directives.
 
 
 #
@@ -123,6 +123,7 @@ By default, you're importing definitions from the same type of shader (fragment 
   }
   ```
   \
+  `inline` just copies the plain text from other shader with no restrictions. `import`s and other `inline`s inside the macro inlined will also get expanded and resolved.\
   Nested macros are also supported, so this code:
   ```glsl
   #pragma shady: macro_begin INVERSE_GRAYSCALE
@@ -237,6 +238,16 @@ By default, you're importing definitions from the same type of shader (fragment 
   ```
 </details>
 
+## Additional features
+* **Correct line numbers in shader error messages**. As a result of fixing an issue with expanded shaders producing unintuitive line numbers in GameMaker error messages, those line numbers turned out even more correct than GameMaker's ones. By default, for some reason, GameMakers padds by ±1 line off of the actual line in error messages, with Shady-preprocessed shaders the lines are now fully correct.
+* **GMEdit support**. Parallel to the development of this tool, some pull requests to [GMEdit](https://github.com/YellowAfterlife/GMEdit) was made by me wich made its shader editor much more usable. Additionally, you can now load custom shader APIs into GMEdit, so there's a **Shady** API available with current releases that adds auto-completion for its directives.
+  <details>
+    <summary><b>Preview</b></summary>
+
+    ![bOhT0py3VN](https://github.com/user-attachments/assets/b7666cac-c4ce-460d-a3cb-dcf4cc201ad8)
+
+  </details>
+
 ## Troubleshooting
 * **Defender<sup>tm</sup> is too defensive**. Some anti-viruses may yield a false-positive warning on the binaries. There's nothing I can do for now besides waiting for binaries to get trusted over time or getting a paid code sign certificate, which is not cost-effective for the current state of the project. If you're not sure, you can compile the tool yourself from sources using Visual Studio and .NET 8.0.
 * **"Project Directory Modified"**. To not see that GameMaker message-box every time any shader is processed navigate to `Preferences` > `General Settings` and enable `Automatically reload changed files`.
@@ -246,8 +257,8 @@ By default, you're importing definitions from the same type of shader (fragment 
     ![image](https://github.com/user-attachments/assets/8ca4f138-bc2a-478c-b23b-046b94e8eee4)
 
   </details>
-* **Changes in the shader aren't applying / shader has lost its code**. Use `Clean` option for the Shady executable to flush possibly corrupted cache files. It is hooked to the "Brush" button in GameMaker IDE so you can just press that. Alternatively, you can call shady executable with the `--clean` option.
-* **GameMaker's shader compilation errors are reporting the wrong line number**. As the preprocessor is "expanding" your added pragma directives and GameMaker's compiler is compiling already expanded sources, you will get error reports on the wrong lines that are from the modified expanded shader source. To view the modified shader to get the idea of what may have gone wrong, navigate to the "shaders" folder of the project, find the directory that has the name of the bugged shader and open the file with the `_mod` postfix inside the directory.
+* **The code in Shader Editor is turned to a preprocessed one / Changes in the shader aren't applying**. Use `Clean` option for the Shady executable to flush possibly corrupted cache files. It is hooked to the "Brush" button in GameMaker IDE so you can just press that. Alternatively, you can call shady executable with the `--clean` option.
+* **Shader is corrupted / Shader has lost its code**. Scan the output console for Shady errors regarding failed integrity check. You could find backup shaders in the project directory in `\shaders\your_shader\your_shader.*_bak` or in the backup archive in `%appdata%\GameMakerStudio2\Cache\GMS2IDE\` with your project name, inside `Shady` directory.
 
 ## Alternatives and inspirations:
 * **[Xpanda](https://github.com/GameMakerDiscord/Xpanda)** – uses a custom syntax and is not integrated with the compilation process but supports HLSL.
@@ -256,6 +267,8 @@ By default, you're importing definitions from the same type of shader (fragment 
 
 ## TODO:
 * **~Optimize caching to not rewrite unmodified shaders.~**
+* **~Fix GameMaker's shader line counting in error messages.~**
+* **~Better backup system~**
 * **Support more shader languages?**
 
 ## Author:
