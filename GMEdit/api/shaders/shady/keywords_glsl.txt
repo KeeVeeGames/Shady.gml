@@ -1,0 +1,9 @@
+shady
+
+import(shader_name|shader_name.identifier_name)
+macro_begin
+macro_end
+inline(shader_name.MACRO_NAME)
+variant(shader_name, [KEYWORD_NAME1], [KEYWORD_NAME2], ...)
+skip_compilation
+print_path
