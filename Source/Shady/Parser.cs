@@ -160,13 +160,9 @@ namespace Shady
             }
         }
 
-        public class UnexpectedExpression : Exception
+        public class UnexpectedExpression(string message) : Exception(message)
         {
-            public string ExpectedExpression { get; private set; }
-            public UnexpectedExpression(string message) : base(message)
-            {
-
-            }
+            
         }
     }
 
