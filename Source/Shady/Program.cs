@@ -33,7 +33,11 @@ namespace Shady
             else
             {
                 archiveDirectory = Environment.GetEnvironmentVariable("YYtempFolder");
-                archivePath = Path.GetFullPath((archiveDirectory ?? "") + "\\Shady");
+
+                if (archiveDirectory != null)
+                {
+                    archivePath = Path.GetFullPath((archiveDirectory ?? "") + "\\Shady");
+                }
             }
 
             string projectPath = args[0];
