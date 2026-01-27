@@ -809,6 +809,32 @@ namespace Shady
                 }
                 else
                 {
+                    // Shouldn't happen in theory
+                    if (shaderLine.ImportRegion.ShaderName == null)
+                    {
+                        Console.WriteLine($"[Shady] Import Error in {
+                            shaderLine.ShaderName
+                        }, line {
+                            shaderLine.LineIndex + 1
+                        }: Cannot import/inline, source shader is not specified!");
+
+                        return;
+                    }
+
+                    // Inline without macro specified
+                    if (shaderLine.ImportRegion.RegionName == null)
+                    {
+                        Console.WriteLine($"[Shady] Import Error in {
+                            shaderLine.ShaderName
+                        }, line {
+                            shaderLine.LineIndex + 1
+                        }: Cannot import/inline from '{
+                            shaderLine.ImportRegion.ShaderName
+                        }', source identifier/macro is not specified!");
+
+                        return;
+                    }
+
                     if (!shaderLine.ImportRegion.RegionName.Contains(Shader.MacroRegion))
                     {
                         if (imported.Contains((shaderLine.ImportRegion.ShaderName, Shader.FullRegion)))
@@ -846,11 +872,11 @@ namespace Shady
                                 shaderLine.ShaderName
                             }, line {
                                 shaderLine.LineIndex + 1
-                            }: Cannot import '{
+                            }: Cannot import/inline '{
                                 shaderLine.ImportRegion.RegionName
                             }' from '{
                                 shaderLine.ImportRegion.ShaderName
-                            }', identifier doesn't exist!");
+                            }', identifier/macro doesn't exist!");
                         }
 
                     }
@@ -860,7 +886,7 @@ namespace Shady
                             shaderLine.ShaderName
                         }, line {
                             shaderLine.LineIndex + 1
-                        }: Cannot import '{
+                        }: Cannot import/inline '{
                             shaderLine.ImportRegion.ShaderName
                         }', shader doesn't exist or has no exported identifiers!");
                     }
